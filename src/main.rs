@@ -30,8 +30,8 @@ async fn main() {
     let SCR_H: f32 = screen_height();
 
     let gamecam = Camera2D {
-        zoom: vec2(1. / SCR_W * 6., 1. / SCR_H * 6.),
-        target: vec2(SCR_W / 6., SCR_H / 6.),
+        zoom: vec2(1. / SCR_W * 4., 1. / SCR_H * 4.),
+        target: vec2(SCR_W / 4., SCR_H / 4.),
         ..Default::default()
     };
 
@@ -143,10 +143,10 @@ async fn main() {
 
                 draw_text_ex(
                     &format!("{t}"),
-                    S * 3. * j as f32 + 16.,
-                    S * 3. * i as f32 + 36.,
+                    S * 2. * j as f32 + 12.,
+                    S * 2. * i as f32 + 24.,
                     TextParams {
-                        font_size: 42,
+                        font_size: 24,
                         color: Color::from_rgba(255, 255, 255, 200),
                         ..Default::default()
                     },

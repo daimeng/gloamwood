@@ -64,16 +64,53 @@ async fn main() {
 
     set_monster(3, 2, 1);
 
+    let mut search_buffer: Vec<(usize, usize)> = vec![(0, 0); maph * mapw];
+
     let mut open_tile = |x: usize, y: usize, val: Option<bool>| {
         // clamp x y
         let x = if x >= mapw { mapw - 1 } else { x };
         let y = if y >= maph { maph - 1 } else { y };
 
         if let Some(v) = val {
-            open[y][x] = v;
+            let mut j = 0;
+
+            search_buffer[j] = (x, y);
+            j += 1;
+
+            while j > 0 {
+                let (xx, yy) = search_buffer[j - 1];
+                j -= 1;
+
+                if open[yy][xx] {
+                    continue;
+                };
+
+                open[yy][xx] = true;
+
+                if auras[yy][xx] > 0 {
+                    continue;
+                }
+
+                if yy < maph - 1 && !open[yy + 1][xx] {
+                    search_buffer[j] = (xx, yy + 1);
+                    j += 1;
+                }
+                if xx < mapw - 1 && !open[yy][xx + 1] {
+                    search_buffer[j] = (xx + 1, yy);
+                    j += 1;
+                }
+                if yy > 0 && !open[yy - 1][xx] {
+                    search_buffer[j] = (xx, yy - 1);
+                    j += 1;
+                }
+                if xx > 0 && !open[yy][xx - 1] {
+                    search_buffer[j] = (xx - 1, yy);
+                    j += 1;
+                }
+            }
         }
+
         open[y][x]
-        // TODO: recurse
     };
 
     let mut mouse_pos = input::mouse_position();

@@ -176,24 +176,6 @@ async fn main() {
                 );
             }
         }
-
-        // draw fog
-        for i in 0..maph {
-            for j in 0..mapw {
-                let t = open_tile(j, i, None);
-
-                if t == false {
-                    draw_rectangle(
-                        S * j as f32,
-                        S * i as f32,
-                        S,
-                        S,
-                        Color::from_rgba(0, 0, 0, 255),
-                    );
-                }
-            }
-        }
-
         set_default_camera();
 
         // draw aura
@@ -211,6 +193,23 @@ async fn main() {
                         ..Default::default()
                     },
                 );
+            }
+        }
+
+        // draw fog
+        for i in 0..maph {
+            for j in 0..mapw {
+                let t = open_tile(j, i, None);
+
+                if t == false {
+                    draw_rectangle(
+                        S * 2. * j as f32,
+                        S * 2. * i as f32,
+                        S * 2.,
+                        S * 2.,
+                        Color::from_rgba(0, 0, 0, 255),
+                    );
+                }
             }
         }
 

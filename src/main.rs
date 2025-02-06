@@ -1,8 +1,8 @@
+use macroquad::input;
 use macroquad::prelude::*;
 
-const SQUARES: i16 = 16;
-
-const S: f32 = 16.;
+const Si: i16 = 16;
+const S: f32 = Si as f32;
 const S2: f32 = S + 2.;
 
 type Point = (i16, i16);
@@ -16,7 +16,6 @@ async fn main() {
     let chars_tex = load_texture("assets/chars.png").await.unwrap();
     chars_tex.set_filter(FilterMode::Nearest);
 
-    let mut fruit: Point = (rand::gen_range(0, SQUARES), rand::gen_range(0, SQUARES));
     let mut score = 0;
     let mut last_update = get_time();
     // let mut game_over = false;
@@ -65,7 +64,27 @@ async fn main() {
 
     set_monster(3, 2, 1);
 
+    let mut open_tile = |x: usize, y: usize, val: Option<bool>| {
+        if let Some(v) = val {
+            open[y][x] = v;
+        }
+        open[y][x]
+        // TODO: recurse
+    };
+
+    let mut mouse_pos = input::mouse_position();
+
     loop {
+        // PROCESS INPUT
+        mouse_pos = input::mouse_position();
+        let mouse_pos_world = &gamecam.screen_to_world(mouse_pos.into());
+        let mouse_tile = (mouse_pos_world.x as i16 / Si, mouse_pos_world.y as i16 / Si);
+
+        let left_click = input::is_mouse_button_pressed(MouseButton::Left);
+        if left_click {
+            open_tile(mouse_tile.0 as usize, mouse_tile.1 as usize, Some(true));
+        }
+
         clear_background(BG_COLOR);
 
         set_camera(&gamecam);
@@ -120,7 +139,7 @@ async fn main() {
         // draw fog
         for i in 0..maph {
             for j in 0..mapw {
-                let t = open[i][j];
+                let t = open_tile(j, i, None);
 
                 if t == false {
                     draw_rectangle(

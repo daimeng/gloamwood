@@ -7,7 +7,8 @@ const S2: f32 = S + 2.;
 
 type Point = (i16, i16);
 
-const BG_COLOR: Color = color_u8!(20, 20, 20, 0);
+const BG_COLOR: Color = color_u8!(15, 15, 23, 255);
+const TERRAIN_TINT: Color = color_u8!(255, 255, 255, 150);
 
 #[macroquad::main("Gloamwood")]
 async fn main() {
@@ -146,7 +147,7 @@ async fn main() {
                     &tiles_tex,
                     S * j as f32,
                     S * i as f32,
-                    WHITE,
+                    TERRAIN_TINT,
                     DrawTextureParams {
                         dest_size,
                         source: Some(Rect::new(S * tmod as f32, S * trow as f32, S, S)),
@@ -182,6 +183,9 @@ async fn main() {
         for i in 0..maph {
             for j in 0..mapw {
                 let t = auras[i][j];
+                if t == 0 {
+                    continue;
+                }
 
                 draw_text_ex(
                     &format!("{t}"),
@@ -209,10 +213,18 @@ async fn main() {
                         S * 2.,
                         Color::from_rgba(0, 0, 0, 255),
                     );
+
+                    draw_rectangle_lines(
+                        S * 2. * j as f32,
+                        S * 2. * i as f32,
+                        S * 2.,
+                        S * 2.,
+                        2.,
+                        Color::from_rgba(50, 50, 50, 255),
+                    );
                 }
             }
         }
-
         next_frame().await;
     }
 }

@@ -65,6 +65,10 @@ async fn main() {
     set_monster(3, 2, 1);
 
     let mut open_tile = |x: usize, y: usize, val: Option<bool>| {
+        // clamp x y
+        let x = if x >= mapw { mapw - 1 } else { x };
+        let y = if y >= maph { maph - 1 } else { y };
+
         if let Some(v) = val {
             open[y][x] = v;
         }

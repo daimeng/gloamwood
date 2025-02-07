@@ -1,5 +1,6 @@
 use macroquad::input;
 use macroquad::prelude::*;
+mod mapgen;
 
 const Si: i16 = 16;
 const S: f32 = Si as f32;
@@ -12,6 +13,8 @@ const TERRAIN_TINT: Color = color_u8!(255, 255, 255, 150);
 
 #[macroquad::main("Gloamwood")]
 async fn main() {
+    request_new_screen_size(960f32, 512f32);
+
     let tiles_tex = load_texture("assets/tiles.png").await.unwrap();
     tiles_tex.set_filter(FilterMode::Nearest);
     let chars_tex = load_texture("assets/chars.png").await.unwrap();
@@ -26,8 +29,8 @@ async fn main() {
     // let right = (1, 0);
     // let left = (-1, 0);
 
-    let SCR_W: f32 = screen_width();
-    let SCR_H: f32 = screen_height();
+    let SCR_W: f32 = 960f32;
+    let SCR_H: f32 = 512f32;
 
     let gamecam = Camera2D {
         zoom: vec2(1. / SCR_W * 4., 1. / SCR_H * 4.),
@@ -38,7 +41,15 @@ async fn main() {
     let mapw = 30;
     let maph = 16;
 
-    let terrains = vec![vec![1; mapw]; maph];
+    let mut genterrains = vec![vec![0f32; mapw]; maph];
+    mapgen::genmap_fissure(&mut genterrains);
+    // println!("{:?}", &genterrains);
+
+    let terrains: Vec<Vec<i16>> = genterrains
+        .iter()
+        .map(|row| row.iter().map(|c| c.round() as i16).collect())
+        .collect();
+
     let mut monsters = vec![vec![0; mapw]; maph];
     let mut auras = vec![vec![0; mapw]; maph];
     let mut open = vec![vec![false; mapw]; maph];

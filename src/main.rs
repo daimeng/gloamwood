@@ -11,6 +11,96 @@ type Point = (i16, i16);
 const BG_COLOR: Color = color_u8!(15, 15, 23, 255);
 const TERRAIN_TINT: Color = color_u8!(255, 255, 255, 150);
 
+struct WorldMap {
+    mapw: usize,
+    maph: usize,
+    terrains: Vec<Vec<i16>>,
+    monsters: Vec<Vec<i16>>,
+    auras: Vec<Vec<i16>>,
+    open: Vec<Vec<bool>>,
+    search_buffer: Vec<(usize, usize)>,
+}
+
+impl WorldMap {
+    fn new(mapw: usize, maph: usize) -> Self {
+        Self {
+            mapw,
+            maph,
+            terrains: vec![vec![0; mapw]; maph],
+            monsters: vec![vec![0; mapw]; maph],
+            auras: vec![vec![0; mapw]; maph],
+            open: vec![vec![false; mapw]; maph],
+            search_buffer: vec![(0, 0); maph * mapw],
+        }
+    }
+
+    fn set_monster(&mut self, x: usize, y: usize, n: i16) {
+        self.monsters[y][x] = n;
+        for yi in 0..3 {
+            let yy = y + yi;
+            if yy == 0 || yy > self.maph {
+                continue;
+            }
+
+            for xi in 0..3 {
+                let xx = x + xi;
+                if xx == 0 || xx > self.mapw {
+                    continue;
+                }
+
+                self.auras[yy - 1][xx - 1] += n;
+            }
+        }
+    }
+
+    fn open_tile(&mut self, x: usize, y: usize, val: Option<bool>) -> bool {
+        // clamp x y
+        let x = if x >= self.mapw { self.mapw - 1 } else { x };
+        let y = if y >= self.maph { self.maph - 1 } else { y };
+
+        if let Some(v) = val {
+            let mut j = 0;
+
+            self.search_buffer[j] = (x, y);
+            j += 1;
+
+            while j > 0 {
+                let (xx, yy) = self.search_buffer[j - 1];
+                j -= 1;
+
+                if self.open[yy][xx] {
+                    continue;
+                };
+
+                self.open[yy][xx] = true;
+
+                if self.auras[yy][xx] > 0 {
+                    continue;
+                }
+
+                if yy < self.maph - 1 && !self.open[yy + 1][xx] {
+                    self.search_buffer[j] = (xx, yy + 1);
+                    j += 1;
+                }
+                if xx < self.mapw - 1 && !self.open[yy][xx + 1] {
+                    self.search_buffer[j] = (xx + 1, yy);
+                    j += 1;
+                }
+                if yy > 0 && !self.open[yy - 1][xx] {
+                    self.search_buffer[j] = (xx, yy - 1);
+                    j += 1;
+                }
+                if xx > 0 && !self.open[yy][xx - 1] {
+                    self.search_buffer[j] = (xx - 1, yy);
+                    j += 1;
+                }
+            }
+        }
+
+        self.open[y][x]
+    }
+}
+
 #[macroquad::main("Gloamwood")]
 async fn main() {
     let tiles_tex = load_texture("assets/tiles.png").await.unwrap();
@@ -52,84 +142,22 @@ async fn main() {
         })
         .collect();
 
-    let mut monsters = vec![vec![0; mapw]; maph];
-    let mut auras = vec![vec![0; mapw]; maph];
-    let mut open = vec![vec![false; mapw]; maph];
     let dest_size = Some(vec2(S, S));
+    let mut world = WorldMap::new(mapw, maph);
+    world.terrains = terrains;
 
-    let mut set_monster = |x: usize, y: usize, n: i32| {
-        monsters[y][x] = n;
-        for yi in 0..3 {
-            let yy = y + yi;
-            if yy == 0 || yy > maph {
-                continue;
-            }
-
-            for xi in 0..3 {
-                let xx = x + xi;
-                if xx == 0 || xx > mapw {
-                    continue;
-                }
-
-                auras[yy - 1][xx - 1] += n;
-            }
-        }
-    };
-
-    set_monster(3, 2, 1);
-
-    let mut search_buffer: Vec<(usize, usize)> = vec![(0, 0); maph * mapw];
-
-    let mut open_tile = |x: usize, y: usize, val: Option<bool>| {
-        // clamp x y
-        let x = if x >= mapw { mapw - 1 } else { x };
-        let y = if y >= maph { maph - 1 } else { y };
-
-        if let Some(v) = val {
-            let mut j = 0;
-
-            search_buffer[j] = (x, y);
-            j += 1;
-
-            while j > 0 {
-                let (xx, yy) = search_buffer[j - 1];
-                j -= 1;
-
-                if open[yy][xx] {
-                    continue;
-                };
-
-                open[yy][xx] = true;
-
-                if auras[yy][xx] > 0 {
-                    continue;
-                }
-
-                if yy < maph - 1 && !open[yy + 1][xx] {
-                    search_buffer[j] = (xx, yy + 1);
-                    j += 1;
-                }
-                if xx < mapw - 1 && !open[yy][xx + 1] {
-                    search_buffer[j] = (xx + 1, yy);
-                    j += 1;
-                }
-                if yy > 0 && !open[yy - 1][xx] {
-                    search_buffer[j] = (xx, yy - 1);
-                    j += 1;
-                }
-                if xx > 0 && !open[yy][xx - 1] {
-                    search_buffer[j] = (xx - 1, yy);
-                    j += 1;
-                }
-            }
-        }
-
-        open[y][x]
-    };
-
+    // ██╗███╗   ██╗██╗████████╗
+    // ██║████╗  ██║██║╚══██╔══╝
+    // ██║██╔██╗ ██║██║   ██║
+    // ██║██║╚██╗██║██║   ██║
+    // ██║██║ ╚████║██║   ██║
+    // ╚═╝╚═╝  ╚═══╝╚═╝   ╚═╝
+    //
+    world.set_monster(3, 2, 1);
     let mut mouse_pos = input::mouse_position();
 
     loop {
+        // adjust camera in case of screen size changes
         gamecam.zoom.x = 1. / screen_width() * 4.;
         gamecam.zoom.y = 1. / screen_height() * 4.;
         gamecam.target.x = screen_width() / 4.;
@@ -148,7 +176,7 @@ async fn main() {
 
         let left_click = input::is_mouse_button_pressed(MouseButton::Left);
         if left_click {
-            open_tile(mouse_tile.0 as usize, mouse_tile.1 as usize, Some(true));
+            world.open_tile(mouse_tile.0 as usize, mouse_tile.1 as usize, Some(true));
         }
 
         clear_background(BG_COLOR);
@@ -169,7 +197,7 @@ async fn main() {
         //
         for i in 0..maph {
             for j in 0..mapw {
-                let t = terrains[i][j];
+                let t = world.terrains[i][j];
                 let trow = t / 16;
                 let tmod = t - trow * 16;
 
@@ -196,7 +224,7 @@ async fn main() {
         //
         for i in 0..maph {
             for j in 0..mapw {
-                let t = monsters[i][j];
+                let t = world.monsters[i][j];
                 let trow = t / 16;
                 let tmod = t - trow * 16;
 
@@ -224,7 +252,7 @@ async fn main() {
         //
         for i in 0..maph {
             for j in 0..mapw {
-                let t = auras[i][j];
+                let t = world.auras[i][j];
                 if t == 0 {
                     continue;
                 }
@@ -251,7 +279,7 @@ async fn main() {
         //
         for i in 0..maph {
             for j in 0..mapw {
-                let t = open_tile(j, i, None);
+                let t = world.open[i][j];
 
                 if t == false {
                     draw_rectangle(

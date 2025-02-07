@@ -13,8 +13,6 @@ const TERRAIN_TINT: Color = color_u8!(255, 255, 255, 150);
 
 #[macroquad::main("Gloamwood")]
 async fn main() {
-    request_new_screen_size(960f32, 512f32);
-
     let tiles_tex = load_texture("assets/tiles.png").await.unwrap();
     tiles_tex.set_filter(FilterMode::Nearest);
     let chars_tex = load_texture("assets/chars.png").await.unwrap();
@@ -29,17 +27,17 @@ async fn main() {
     // let right = (1, 0);
     // let left = (-1, 0);
 
-    let SCR_W: f32 = 960f32;
-    let SCR_H: f32 = 512f32;
-
-    let gamecam = Camera2D {
-        zoom: vec2(1. / SCR_W * 4., 1. / SCR_H * 4.),
-        target: vec2(SCR_W / 4., SCR_H / 4.),
-        ..Default::default()
-    };
-
     let mapw = 30;
     let maph = 16;
+    let scale = 2.;
+
+    request_new_screen_size(mapw as f32 * S * scale, maph as f32 * S * scale);
+
+    let mut gamecam = Camera2D {
+        zoom: vec2(1. / screen_width() * 4., 1. / screen_height() * 4.),
+        target: vec2(screen_width() / 4., screen_height() / 4.),
+        ..Default::default()
+    };
 
     let mut genterrains = vec![vec![0f32; mapw]; maph];
     mapgen::genmap_fissure(&mut genterrains);
@@ -47,7 +45,11 @@ async fn main() {
 
     let terrains: Vec<Vec<i16>> = genterrains
         .iter()
-        .map(|row| row.iter().map(|c| c.round() as i16).collect())
+        .map(|row| {
+            row.iter()
+                .map(|c| (c.max(0.) * 100.).round() as i16)
+                .collect()
+        })
         .collect();
 
     let mut monsters = vec![vec![0; mapw]; maph];
@@ -128,6 +130,11 @@ async fn main() {
     let mut mouse_pos = input::mouse_position();
 
     loop {
+        gamecam.zoom.x = 1. / screen_width() * 4.;
+        gamecam.zoom.y = 1. / screen_height() * 4.;
+        gamecam.target.x = screen_width() / 4.;
+        gamecam.target.y = screen_height() / 4.;
+
         // ██╗███╗   ██╗██████╗ ██╗   ██╗████████╗
         // ██║████╗  ██║██╔══██╗██║   ██║╚══██╔══╝
         // ██║██╔██╗ ██║██████╔╝██║   ██║   ██║

@@ -7,7 +7,7 @@ pub fn genmap_fissure(terrain: &mut [Vec<f32>]) {
     let h = terrain.len();
     let w = terrain[0].len();
 
-    let times = 100;
+    let times = 1000;
 
     for t in 0..times {
         let p1 = (rng.gen_range(0, w) as i16, rng.gen_range(0, h) as i16);
@@ -39,7 +39,13 @@ pub fn genmap_fissure(terrain: &mut [Vec<f32>]) {
                     for j in 0..xx.min(w) {
                         terrain[y][j] += 1.0;
                     }
+                    for j in xx..w {
+                        terrain[y][j] -= 1.0;
+                    }
                 } else {
+                    for j in 0..xx.min(w) {
+                        terrain[y][j] -= 1.0;
+                    }
                     for j in xx..w {
                         terrain[y][j] += 1.0;
                     }
@@ -63,7 +69,13 @@ pub fn genmap_fissure(terrain: &mut [Vec<f32>]) {
                     for i in 0..yy.min(h) {
                         terrain[i][x] += 1.0;
                     }
+                    for i in yy..h {
+                        terrain[i][x] -= 1.0;
+                    }
                 } else {
+                    for i in 0..yy.min(h) {
+                        terrain[i][x] -= 1.0;
+                    }
                     for i in yy..h {
                         terrain[i][x] += 1.0;
                     }
@@ -80,4 +92,6 @@ pub fn genmap_fissure(terrain: &mut [Vec<f32>]) {
             terrain[i][j] = terrain[i][j] / times as f32;
         }
     }
+
+    println!("{:?}", terrain);
 }

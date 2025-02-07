@@ -19,14 +19,8 @@ async fn main() {
     let chars_tex = load_texture("assets/chars.png").await.unwrap();
     chars_tex.set_filter(FilterMode::Nearest);
 
-    let mut score = 0;
     let mut last_update = get_time();
     // let mut game_over = false;
-
-    // let up = (0, -1);
-    // let down = (0, 1);
-    // let right = (1, 0);
-    // let left = (-1, 0);
 
     let mapw = 30;
     let maph = 16;
@@ -40,6 +34,13 @@ async fn main() {
         ..Default::default()
     };
 
+    // ██╗███╗   ██╗██╗████████╗
+    // ██║████╗  ██║██║╚══██╔══╝
+    // ██║██╔██╗ ██║██║   ██║
+    // ██║██║╚██╗██║██║   ██║
+    // ██║██║ ╚████║██║   ██║
+    // ╚═╝╚═╝  ╚═══╝╚═╝   ╚═╝
+    //
     let mut genterrains = vec![vec![0f32; mapw]; maph];
     mapgen::genmap_fissure(&mut genterrains);
     // println!("{:?}", &genterrains);
@@ -57,13 +58,6 @@ async fn main() {
     let mut world = worldmap::WorldMap::new(mapw, maph);
     world.terrains = terrains;
 
-    // ██╗███╗   ██╗██╗████████╗
-    // ██║████╗  ██║██║╚══██╔══╝
-    // ██║██╔██╗ ██║██║   ██║
-    // ██║██║╚██╗██║██║   ██║
-    // ██║██║ ╚████║██║   ██║
-    // ╚═╝╚═╝  ╚═══╝╚═╝   ╚═╝
-    //
     world.set_monster(3, 2, 1);
     let mut mouse_pos = input::mouse_position();
 

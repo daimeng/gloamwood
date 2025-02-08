@@ -17,8 +17,6 @@ pub struct WorldMap {
     first: bool,
 }
 
-const DIRS: [[i16; 2]; 5] = [[0, 0], [0, -1], [1, 0], [0, 1], [-1, 0]];
-
 impl WorldMap {
     pub fn new(mapw: usize, maph: usize) -> Self {
         Self {
@@ -65,7 +63,8 @@ impl WorldMap {
                     continue;
                 }
 
-                self.auras[yy - 1][xx - 1] += (n - old_n);
+                // patch the difference for surrounding tile auras
+                self.auras[yy - 1][xx - 1] += n - old_n;
             }
         }
     }
@@ -95,6 +94,7 @@ impl WorldMap {
                 self.set_monster(xx - 1, yy - 1, 0);
 
                 if mon > 0 {
+                    // don't take new values that are also adjacent
                     while self.gen_i < self.gen_pool.len() {
                         let n = self.gen_pool[self.gen_i];
                         let i = n / self.mapw;
@@ -121,6 +121,7 @@ impl WorldMap {
         let x = if x >= self.mapw { self.mapw - 1 } else { x };
         let y = if y >= self.maph { self.maph - 1 } else { y };
 
+        // move mines out of way for first click
         if self.first {
             self.remine(x, y);
         }

@@ -5,6 +5,7 @@ pub struct WorldMap {
     pub monsters: Vec<Vec<i16>>,
     pub auras: Vec<Vec<i16>>,
     pub open: Vec<Vec<bool>>,
+    pub flags: Vec<Vec<i16>>,
     search_buffer: Vec<(usize, usize)>,
 }
 
@@ -17,6 +18,7 @@ impl WorldMap {
             monsters: vec![vec![0; mapw]; maph],
             auras: vec![vec![0; mapw]; maph],
             open: vec![vec![false; mapw]; maph],
+            flags: vec![vec![0; mapw]; maph],
             search_buffer: vec![(0, 0); maph * mapw],
         }
     }
@@ -38,6 +40,14 @@ impl WorldMap {
                 self.auras[yy - 1][xx - 1] += n;
             }
         }
+    }
+
+    pub fn flag_tile(&mut self, x: usize, y: usize) {
+        // clamp x y
+        let x = if x >= self.mapw { self.mapw - 1 } else { x };
+        let y = if y >= self.maph { self.maph - 1 } else { y };
+
+        self.flags[y][x] = (self.flags[y][x] + 1) % 6;
     }
 
     pub fn open_tile(&mut self, x: usize, y: usize) -> bool {

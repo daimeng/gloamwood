@@ -18,6 +18,8 @@ async fn main() {
     tiles_tex.set_filter(FilterMode::Nearest);
     let chars_tex = load_texture("assets/chars.png").await.unwrap();
     chars_tex.set_filter(FilterMode::Nearest);
+    let interface_tex = load_texture("assets/interface.png").await.unwrap();
+    interface_tex.set_filter(FilterMode::Nearest);
 
     let mut last_update = get_time();
     // let mut game_over = false;
@@ -55,6 +57,7 @@ async fn main() {
         .collect();
 
     let dest_size = Some(vec2(S, S));
+    let dest_size2 = Some(vec2(S * 2., S * 2.));
     let mut world = worldmap::WorldMap::new(mapw, maph);
     world.terrains = terrains;
 
@@ -95,7 +98,7 @@ async fn main() {
         }
         let right_click = input::is_mouse_button_pressed(MouseButton::Right);
         if right_click {
-            world.open_tile(mouse_tile.0 as usize, mouse_tile.1 as usize);
+            world.flag_tile(mouse_tile.0 as usize, mouse_tile.1 as usize);
         }
 
         clear_background(BG_COLOR);
@@ -220,6 +223,27 @@ async fn main() {
                 }
             }
         }
+
+        for i in 0..maph {
+            for j in 0..mapw {
+                let t = world.flags[i][j];
+                let trow = t / 16;
+                let tmod = t - trow * 16;
+
+                draw_texture_ex(
+                    &interface_tex,
+                    S * 2. * j as f32,
+                    S * 2. * i as f32,
+                    WHITE,
+                    DrawTextureParams {
+                        dest_size: dest_size2,
+                        source: Some(Rect::new(S * tmod as f32, S * trow as f32, S, S)),
+                        ..Default::default()
+                    },
+                );
+            }
+        }
+
         next_frame().await;
     }
 }

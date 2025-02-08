@@ -8,9 +8,6 @@ mod worldmap;
 
 const Si: i16 = 16;
 const S: f32 = Si as f32;
-const S2: f32 = S + 2.;
-
-type Point = (i16, i16);
 
 const BG_COLOR: Color = color_u8!(15, 15, 23, 255);
 const TERRAIN_TINT: Color = color_u8!(255, 255, 255, 150);
@@ -94,7 +91,11 @@ async fn main() {
 
         let left_click = input::is_mouse_button_pressed(MouseButton::Left);
         if left_click {
-            world.open_tile(mouse_tile.0 as usize, mouse_tile.1 as usize, Some(true));
+            world.open_tile(mouse_tile.0 as usize, mouse_tile.1 as usize);
+        }
+        let right_click = input::is_mouse_button_pressed(MouseButton::Right);
+        if right_click {
+            world.open_tile(mouse_tile.0 as usize, mouse_tile.1 as usize);
         }
 
         clear_background(BG_COLOR);

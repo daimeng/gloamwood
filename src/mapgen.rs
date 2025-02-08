@@ -92,6 +92,4 @@ pub fn genmap_fissure(terrain: &mut [Vec<f32>]) {
             terrain[i][j] = terrain[i][j] / times as f32;
         }
     }
-
-    println!("{:?}", terrain);
 }

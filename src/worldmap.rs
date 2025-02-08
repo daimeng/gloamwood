@@ -40,47 +40,45 @@ impl WorldMap {
         }
     }
 
-    pub fn open_tile(&mut self, x: usize, y: usize, val: Option<bool>) -> bool {
+    pub fn open_tile(&mut self, x: usize, y: usize) -> bool {
         // clamp x y
         let x = if x >= self.mapw { self.mapw - 1 } else { x };
         let y = if y >= self.maph { self.maph - 1 } else { y };
 
-        if let Some(v) = val {
-            let mut j = 0;
+        let mut j = 0;
 
-            self.search_buffer[j] = (x, y);
-            j += 1;
+        self.search_buffer[j] = (x, y);
+        j += 1;
 
-            while j > 0 {
-                let (xx, yy) = self.search_buffer[j - 1];
-                j -= 1;
+        while j > 0 {
+            let (xx, yy) = self.search_buffer[j - 1];
+            j -= 1;
 
-                if self.open[yy][xx] {
-                    continue;
-                };
+            if self.open[yy][xx] {
+                continue;
+            };
 
-                self.open[yy][xx] = true;
+            self.open[yy][xx] = true;
 
-                if self.auras[yy][xx] > 0 {
-                    continue;
-                }
+            if self.auras[yy][xx] > 0 {
+                continue;
+            }
 
-                if yy < self.maph - 1 && !self.open[yy + 1][xx] {
-                    self.search_buffer[j] = (xx, yy + 1);
-                    j += 1;
-                }
-                if xx < self.mapw - 1 && !self.open[yy][xx + 1] {
-                    self.search_buffer[j] = (xx + 1, yy);
-                    j += 1;
-                }
-                if yy > 0 && !self.open[yy - 1][xx] {
-                    self.search_buffer[j] = (xx, yy - 1);
-                    j += 1;
-                }
-                if xx > 0 && !self.open[yy][xx - 1] {
-                    self.search_buffer[j] = (xx - 1, yy);
-                    j += 1;
-                }
+            if yy < self.maph - 1 && !self.open[yy + 1][xx] {
+                self.search_buffer[j] = (xx, yy + 1);
+                j += 1;
+            }
+            if xx < self.mapw - 1 && !self.open[yy][xx + 1] {
+                self.search_buffer[j] = (xx + 1, yy);
+                j += 1;
+            }
+            if yy > 0 && !self.open[yy - 1][xx] {
+                self.search_buffer[j] = (xx, yy - 1);
+                j += 1;
+            }
+            if xx > 0 && !self.open[yy][xx - 1] {
+                self.search_buffer[j] = (xx - 1, yy);
+                j += 1;
             }
         }
 

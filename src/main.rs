@@ -61,18 +61,8 @@ async fn main() {
     let mut world = worldmap::WorldMap::new(mapw, maph);
     world.terrains = terrains;
 
-    let rng = RandGenerator::new();
-    rng.srand(date::now() as u64);
-
-    let mut pool: Vec<usize> = (0..mapw * maph).collect();
-    pool.shuffle_with_state(&rng);
-    pool.iter().take(99).for_each(|&n| {
-        let y = n / mapw;
-        let x = n - y * mapw;
-        world.set_monster(x, y, 1);
-    });
-
-    let mut mouse_pos = input::mouse_position();
+    world.init();
+    let mut mouse_pos;
 
     loop {
         // adjust camera in case of screen size changes

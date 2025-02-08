@@ -1,5 +1,8 @@
 use macroquad::input;
+use macroquad::miniquad::date;
 use macroquad::prelude::*;
+use macroquad::rand::ChooseRandom;
+use macroquad::rand::RandGenerator;
 mod mapgen;
 mod worldmap;
 
@@ -58,7 +61,17 @@ async fn main() {
     let mut world = worldmap::WorldMap::new(mapw, maph);
     world.terrains = terrains;
 
-    world.set_monster(3, 2, 1);
+    let rng = RandGenerator::new();
+    rng.srand(date::now() as u64);
+
+    let mut pool: Vec<usize> = (0..mapw * maph).collect();
+    pool.shuffle_with_state(&rng);
+    pool.iter().take(99).for_each(|&n| {
+        let y = n / mapw;
+        let x = n - y * mapw;
+        world.set_monster(x, y, 1);
+    });
+
     let mut mouse_pos = input::mouse_position();
 
     loop {

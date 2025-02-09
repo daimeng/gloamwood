@@ -17,6 +17,24 @@ pub struct WorldMap {
     first: bool,
 }
 
+fn neighbors(x: usize, y: usize, w: usize, h: usize) -> impl Iterator<Item = (usize, usize)> {
+    (0..3).flat_map(move |dy| {
+        let yy = y + dy;
+        (0..3).filter_map(move |dx| {
+            if yy == 0 || yy > h {
+                return None;
+            }
+
+            let xx = x + dx;
+            if xx == 0 || xx > w {
+                None
+            } else {
+                Some((xx - 1, yy - 1))
+            }
+        })
+    })
+}
+
 impl WorldMap {
     pub fn new(mapw: usize, maph: usize) -> Self {
         Self {
@@ -51,21 +69,10 @@ impl WorldMap {
     pub fn set_monster(&mut self, x: usize, y: usize, n: i16) {
         let old_n = self.monsters[y][x];
         self.monsters[y][x] = n;
-        for yi in 0..3 {
-            let yy = y + yi;
-            if yy == 0 || yy > self.maph {
-                continue;
-            }
 
-            for xi in 0..3 {
-                let xx = x + xi;
-                if xx == 0 || xx > self.mapw {
-                    continue;
-                }
-
-                // patch the difference for surrounding tile auras
-                self.auras[yy - 1][xx - 1] += n - old_n;
-            }
+        for (xx, yy) in neighbors(x, y, self.mapw, self.maph) {
+            // patch the difference for surrounding tile auras
+            self.auras[yy][xx] += n - old_n;
         }
     }
 
@@ -81,39 +88,27 @@ impl WorldMap {
     }
 
     pub fn remine(&mut self, x: usize, y: usize) {
-        for dy in 0..3 {
-            let yy = y + dy;
-            if yy == 0 || yy > self.maph {
-                continue;
-            }
+        for (xx, yy) in neighbors(x, y, self.mapw, self.maph) {
+            let mon = self.monsters[yy][xx];
+            self.set_monster(xx, yy, 0);
 
-            for dx in 0..3 {
-                let xx = x + dx;
-                if xx == 0 || xx > self.mapw {
-                    continue;
-                }
+            if mon > 0 {
+                // don't take new values that are also adjacent
+                while self.gen_i < self.gen_pool.len() {
+                    let n = self.gen_pool[self.gen_i];
+                    let i = n / self.mapw;
+                    let j = n - i * self.mapw;
+                    self.gen_i += 1;
 
-                let mon = self.monsters[yy - 1][xx - 1];
-                self.set_monster(xx - 1, yy - 1, 0);
-
-                if mon > 0 {
-                    // don't take new values that are also adjacent
-                    while self.gen_i < self.gen_pool.len() {
-                        let n = self.gen_pool[self.gen_i];
-                        let i = n / self.mapw;
-                        let j = n - i * self.mapw;
-                        self.gen_i += 1;
-
-                        if (i as i16 - y as i16).abs() < 2 {
-                            continue;
-                        }
-                        if (j as i16 - x as i16).abs() < 2 {
-                            continue;
-                        }
-
-                        self.set_monster(j, i, mon);
-                        break;
+                    if (i as i16 - y as i16).abs() < 2 {
+                        continue;
                     }
+                    if (j as i16 - x as i16).abs() < 2 {
+                        continue;
+                    }
+
+                    self.set_monster(j, i, mon);
+                    break;
                 }
             }
         }

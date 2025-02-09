@@ -162,4 +162,33 @@ impl WorldMap {
 
         self.open[y][x]
     }
+
+    pub fn chord_tile(&mut self, x: usize, y: usize) {
+        // only chord open tiles
+        if !self.open[y][x] {
+            return;
+        }
+
+        // tile must have some enemy nearby
+        let aura = self.auras[y][x];
+        if aura < 1 {
+            return;
+        }
+
+        // sum current values
+        let mut sum = 0;
+        for (xx, yy) in neighbors(x, y, self.mapw, self.maph) {
+            sum += self.flags[yy][xx];
+        }
+
+        if sum == aura {
+            for (xx, yy) in neighbors(x, y, self.mapw, self.maph) {
+                if self.flags[yy][xx] > 0 {
+                    continue;
+                }
+
+                self.open_tile(xx, yy);
+            }
+        }
+    }
 }

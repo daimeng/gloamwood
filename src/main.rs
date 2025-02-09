@@ -79,13 +79,20 @@ async fn main() {
         let mouse_pos_world = &gamecam.screen_to_world(mouse_pos.into());
         let mouse_tile = (mouse_pos_world.x as i16 / Si, mouse_pos_world.y as i16 / Si);
 
+        // OPEN tile
         let left_click = input::is_mouse_button_pressed(MouseButton::Left);
         if left_click {
             world.open_tile(mouse_tile.0 as usize, mouse_tile.1 as usize);
         }
+        // FLAG tile
         let right_click = input::is_mouse_button_pressed(MouseButton::Right);
         if right_click {
             world.flag_tile(mouse_tile.0 as usize, mouse_tile.1 as usize);
+        }
+        // CHORD tile
+        let mid_click = input::is_mouse_button_pressed(MouseButton::Middle);
+        if mid_click {
+            world.chord_tile(mouse_tile.0 as usize, mouse_tile.1 as usize);
         }
 
         clear_background(BG_COLOR);

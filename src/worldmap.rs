@@ -74,6 +74,9 @@ impl WorldMap {
         let x = if x >= self.mapw { self.mapw - 1 } else { x };
         let y = if y >= self.maph { self.maph - 1 } else { y };
 
+        if self.open[y][x] {
+            return;
+        }
         self.flags[y][x] = (self.flags[y][x] + 1) % 6;
     }
 
@@ -141,6 +144,7 @@ impl WorldMap {
             };
 
             self.open[yy][xx] = true;
+            self.flags[yy][xx] = 0;
 
             if self.auras[yy][xx] > 0 {
                 continue;

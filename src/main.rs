@@ -1,8 +1,5 @@
 use macroquad::input;
-use macroquad::miniquad::date;
 use macroquad::prelude::*;
-use macroquad::rand::ChooseRandom;
-use macroquad::rand::RandGenerator;
 mod mapgen;
 mod worldmap;
 

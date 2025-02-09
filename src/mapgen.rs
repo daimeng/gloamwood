@@ -9,7 +9,7 @@ pub fn genmap_fissure(terrain: &mut [Vec<f32>]) {
 
     let times = 1000;
 
-    for t in 0..times {
+    for _ in 0..times {
         let p1 = (rng.gen_range(0, w) as i16, rng.gen_range(0, h) as i16);
 
         let mut p2 = p1.clone();

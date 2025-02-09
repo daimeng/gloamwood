@@ -24,12 +24,16 @@ async fn main() {
     let mapw = 30;
     let maph = 16;
     let scale = 2.;
+    let scalex2 = scale * 2.;
 
     request_new_screen_size(mapw as f32 * S * scale, maph as f32 * S * scale);
 
     let mut gamecam = Camera2D {
-        zoom: vec2(1. / screen_width() * 4., 1. / screen_height() * 4.),
-        target: vec2(screen_width() / 4., screen_height() / 4.),
+        zoom: vec2(
+            1. / screen_width() * scalex2,
+            1. / screen_height() * scalex2,
+        ),
+        target: vec2(screen_width() / scalex2, screen_height() / scalex2),
         ..Default::default()
     };
 
@@ -63,10 +67,10 @@ async fn main() {
 
     loop {
         // adjust camera in case of screen size changes
-        gamecam.zoom.x = 1. / screen_width() * 4.;
-        gamecam.zoom.y = 1. / screen_height() * 4.;
-        gamecam.target.x = screen_width() / 4.;
-        gamecam.target.y = screen_height() / 4.;
+        gamecam.zoom.x = 1. / screen_width() * scalex2;
+        gamecam.zoom.y = 1. / screen_height() * scalex2;
+        gamecam.target.x = screen_width() / scalex2;
+        gamecam.target.y = screen_height() / scalex2;
 
         // ██╗███╗   ██╗██████╗ ██╗   ██╗████████╗
         // ██║████╗  ██║██╔══██╗██║   ██║╚══██╔══╝

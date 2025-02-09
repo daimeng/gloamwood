@@ -131,34 +131,31 @@ impl WorldMap {
         j += 1;
 
         while j > 0 {
-            let (xx, yy) = self.search_buffer[j - 1];
+            // shadow original tile vars
+            let (x, y) = self.search_buffer[j - 1];
             j -= 1;
 
-            if self.open[yy][xx] {
+            if self.open[y][x] {
                 continue;
             };
 
-            self.open[yy][xx] = true;
-            self.flags[yy][xx] = 0;
+            self.open[y][x] = true;
+            self.flags[y][x] = 0;
 
-            if self.auras[yy][xx] > 0 {
+            if self.auras[y][x] > 0 {
                 continue;
             }
 
-            if yy < self.maph - 1 && !self.open[yy + 1][xx] {
-                self.search_buffer[j] = (xx, yy + 1);
-                j += 1;
-            }
-            if xx < self.mapw - 1 && !self.open[yy][xx + 1] {
-                self.search_buffer[j] = (xx + 1, yy);
-                j += 1;
-            }
-            if yy > 0 && !self.open[yy - 1][xx] {
-                self.search_buffer[j] = (xx, yy - 1);
-                j += 1;
-            }
-            if xx > 0 && !self.open[yy][xx - 1] {
-                self.search_buffer[j] = (xx - 1, yy);
+            for (xx, yy) in neighbors(x, y, self.mapw, self.maph) {
+                // skip self
+                if xx == x && yy == y {
+                    continue;
+                }
+                if self.open[yy][xx] {
+                    continue;
+                }
+
+                self.search_buffer[j] = (xx, yy);
                 j += 1;
             }
         }

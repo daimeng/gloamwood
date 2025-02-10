@@ -1,5 +1,8 @@
 use macroquad::input;
 use macroquad::prelude::*;
+use macroquad::ui::hash;
+use macroquad::ui::root_ui;
+use macroquad::ui::widgets;
 mod mapgen;
 mod worldmap;
 
@@ -20,6 +23,7 @@ async fn main() {
 
     let mapw = 30;
     let maph = 16;
+    let mines = 99;
     let scale = 2.;
     let scalex2 = scale * 2.;
 
@@ -44,7 +48,7 @@ async fn main() {
     // ██║██║ ╚████║██║   ██║
     // ╚═╝╚═╝  ╚═══╝╚═╝   ╚═╝
     //
-    let init = |mapw: usize, maph: usize| {
+    let init = |mapw: usize, maph: usize, mines: usize| {
         let mut genterrains = vec![vec![0f32; mapw]; maph];
         mapgen::genmap_fissure(&mut genterrains);
         // println!("{:?}", &genterrains);
@@ -60,11 +64,11 @@ async fn main() {
 
         let mut w = worldmap::WorldMap::new(mapw, maph);
         w.terrains = terrains;
-        w.init();
+        w.init(mines);
         w
     };
 
-    let mut world = init(mapw, maph);
+    let mut world = init(mapw, maph, mines);
 
     let mut mouse_pos;
 
@@ -107,7 +111,7 @@ async fn main() {
         // Restart
         let r_pressed = input::is_key_pressed(KeyCode::R);
         if r_pressed {
-            world = init(mapw, maph);
+            world = init(mapw, maph, mines);
         }
 
         clear_background(BG_COLOR);
@@ -265,6 +269,11 @@ async fn main() {
                 WHITE,
             );
         }
+
+        widgets::Window::new(hash!(), vec2(0., 0.), vec2(200., 400.))
+            .label("Config")
+            .titlebar(true)
+            .ui(&mut *root_ui(), |ui| {});
 
         next_frame().await;
     }

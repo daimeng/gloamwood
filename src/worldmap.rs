@@ -54,12 +54,12 @@ impl WorldMap {
         }
     }
 
-    pub fn init(&mut self) {
+    pub fn init(&mut self, mines: usize) {
         let rng = RandGenerator::new();
         rng.srand(date::now() as u64);
 
         self.gen_pool.shuffle_with_state(&rng);
-        for i in 0..99 {
+        for i in 0..mines {
             self.gen_i += 1;
             let n = self.gen_pool[i];
             let y = n / self.mapw;

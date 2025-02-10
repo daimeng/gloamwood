@@ -18,8 +18,6 @@ async fn main() {
     let interface_tex = load_texture("assets/interface.png").await.unwrap();
     interface_tex.set_filter(FilterMode::Nearest);
 
-    let mut last_update = get_time();
-
     let mapw = 30;
     let maph = 16;
     let scale = 2.;
@@ -46,7 +44,7 @@ async fn main() {
     // ██║██║ ╚████║██║   ██║
     // ╚═╝╚═╝  ╚═══╝╚═╝   ╚═╝
     //
-    let mut init = |mapw: usize, maph: usize| {
+    let init = |mapw: usize, maph: usize| {
         let mut genterrains = vec![vec![0f32; mapw]; maph];
         mapgen::genmap_fissure(&mut genterrains);
         // println!("{:?}", &genterrains);

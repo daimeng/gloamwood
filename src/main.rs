@@ -257,6 +257,17 @@ async fn main() {
             }
         }
 
+        if world.game_over {
+            let center = get_text_center("Game Over", Option::None, 48, 1.0, 0.);
+            draw_text(
+                "Game Over",
+                screen_width() / 2. - center.x,
+                screen_height() / 2. - center.y,
+                48.,
+                WHITE,
+            );
+        }
+
         next_frame().await;
     }
 }

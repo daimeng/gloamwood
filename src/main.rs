@@ -19,7 +19,6 @@ async fn main() {
     interface_tex.set_filter(FilterMode::Nearest);
 
     let mut last_update = get_time();
-    // let mut game_over = false;
 
     let mapw = 30;
     let maph = 16;
@@ -37,6 +36,9 @@ async fn main() {
         ..Default::default()
     };
 
+    let dest_size = Some(vec2(S, S));
+    let dest_size2 = Some(vec2(S * 2., S * 2.));
+
     // ██╗███╗   ██╗██╗████████╗
     // ██║████╗  ██║██║╚══██╔══╝
     // ██║██╔██╗ ██║██║   ██║
@@ -44,25 +46,28 @@ async fn main() {
     // ██║██║ ╚████║██║   ██║
     // ╚═╝╚═╝  ╚═══╝╚═╝   ╚═╝
     //
-    let mut genterrains = vec![vec![0f32; mapw]; maph];
-    mapgen::genmap_fissure(&mut genterrains);
-    // println!("{:?}", &genterrains);
+    let mut init = |mapw: usize, maph: usize| {
+        let mut genterrains = vec![vec![0f32; mapw]; maph];
+        mapgen::genmap_fissure(&mut genterrains);
+        // println!("{:?}", &genterrains);
 
-    let terrains: Vec<Vec<i16>> = genterrains
-        .iter()
-        .map(|row| {
-            row.iter()
-                .map(|c| (c.max(0.) * 100.).round() as i16)
-                .collect()
-        })
-        .collect();
+        let terrains: Vec<Vec<i16>> = genterrains
+            .iter()
+            .map(|row| {
+                row.iter()
+                    .map(|c| (c.max(0.) * 100.).round() as i16)
+                    .collect()
+            })
+            .collect();
 
-    let dest_size = Some(vec2(S, S));
-    let dest_size2 = Some(vec2(S * 2., S * 2.));
-    let mut world = worldmap::WorldMap::new(mapw, maph);
-    world.terrains = terrains;
+        let mut w = worldmap::WorldMap::new(mapw, maph);
+        w.terrains = terrains;
+        w.init();
+        w
+    };
 
-    world.init();
+    let mut world = init(mapw, maph);
+
     let mut mouse_pos;
 
     loop {
@@ -83,30 +88,33 @@ async fn main() {
         let mouse_pos_world = &gamecam.screen_to_world(mouse_pos.into());
         let mouse_tile = (mouse_pos_world.x as i16 / Si, mouse_pos_world.y as i16 / Si);
 
-        // OPEN tile
-        let left_click = input::is_mouse_button_pressed(MouseButton::Left);
-        if left_click {
-            world.open_tile(mouse_tile.0 as usize, mouse_tile.1 as usize);
+        if !world.game_over {
+            // OPEN tile
+            let left_click = input::is_mouse_button_pressed(MouseButton::Left);
+            if left_click {
+                world.open_tile(mouse_tile.0 as usize, mouse_tile.1 as usize);
+            }
+            // FLAG tile
+            let right_click = input::is_mouse_button_pressed(MouseButton::Right);
+            if right_click {
+                world.flag_tile(mouse_tile.0 as usize, mouse_tile.1 as usize);
+            }
+            // CHORD tile
+            let mid_click = input::is_mouse_button_pressed(MouseButton::Middle);
+            if mid_click {
+                world.chord_tile(mouse_tile.0 as usize, mouse_tile.1 as usize);
+            }
         }
-        // FLAG tile
-        let right_click = input::is_mouse_button_pressed(MouseButton::Right);
-        if right_click {
-            world.flag_tile(mouse_tile.0 as usize, mouse_tile.1 as usize);
-        }
-        // CHORD tile
-        let mid_click = input::is_mouse_button_pressed(MouseButton::Middle);
-        if mid_click {
-            world.chord_tile(mouse_tile.0 as usize, mouse_tile.1 as usize);
+
+        // Restart
+        let r_pressed = input::is_key_pressed(KeyCode::R);
+        if r_pressed {
+            world = init(mapw, maph);
         }
 
         clear_background(BG_COLOR);
 
         set_camera(&gamecam);
-
-        // let game_size = screen_width().min(screen_height());
-        // let offset_x = (screen_width() - game_size) / 2. + 10.;
-        // let offset_y = (screen_height() - game_size) / 2. + 10.;
-        // let sq_size = (screen_height() - offset_y * 2.) / SQUARES as f32;
 
         // ██████╗ ██████╗  █████╗ ██╗    ██╗    ████████╗███████╗██████╗ ██████╗  █████╗ ██╗███╗   ██╗
         // ██╔══██╗██╔══██╗██╔══██╗██║    ██║    ╚══██╔══╝██╔════╝██╔══██╗██╔══██╗██╔══██╗██║████╗  ██║

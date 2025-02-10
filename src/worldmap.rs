@@ -11,6 +11,7 @@ pub struct WorldMap {
     pub auras: Vec<Vec<i16>>,
     pub open: Vec<Vec<bool>>,
     pub flags: Vec<Vec<i16>>,
+    pub game_over: bool,
     search_buffer: Vec<(usize, usize)>,
     gen_pool: Vec<usize>,
     gen_i: usize,
@@ -45,6 +46,7 @@ impl WorldMap {
             auras: vec![vec![0; mapw]; maph],
             open: vec![vec![false; mapw]; maph],
             flags: vec![vec![0; mapw]; maph],
+            game_over: false,
             search_buffer: vec![(0, 0); maph * mapw],
             gen_pool: (0..mapw * maph).collect(),
             gen_i: 0,
@@ -141,6 +143,11 @@ impl WorldMap {
 
             self.open[y][x] = true;
             self.flags[y][x] = 0;
+
+            // lose if opened a square with a monster
+            if self.monsters[y][x] != 0 {
+                self.game_over = true;
+            }
 
             if self.auras[y][x] > 0 {
                 continue;

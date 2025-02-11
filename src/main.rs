@@ -2,7 +2,6 @@ use macroquad::input;
 use macroquad::prelude::*;
 use macroquad::ui::hash;
 use macroquad::ui::root_ui;
-use macroquad::ui::widgets;
 mod mapgen;
 mod worldmap;
 
@@ -27,14 +26,14 @@ async fn main() {
     let scale = 2.;
     let scalex2 = scale * 2.;
 
-    request_new_screen_size(mapw as f32 * S * scale, maph as f32 * S * scale);
+    request_new_screen_size(mapw as f32 * S * scale, maph as f32 * S * scale + 100.);
 
     let mut gamecam = Camera2D {
         zoom: vec2(
             1. / screen_width() * scalex2,
             1. / screen_height() * scalex2,
         ),
-        target: vec2(screen_width() / scalex2, screen_height() / scalex2),
+        target: vec2(screen_width() / scalex2, screen_height() / scalex2 - 50.),
         ..Default::default()
     };
 
@@ -69,15 +68,15 @@ async fn main() {
     };
 
     let mut world = init(mapw, maph, mines);
-
     let mut mouse_pos;
+    let mut menu_open = false;
 
     loop {
         // adjust camera in case of screen size changes
         gamecam.zoom.x = 1. / screen_width() * scalex2;
         gamecam.zoom.y = 1. / screen_height() * scalex2;
         gamecam.target.x = screen_width() / scalex2;
-        gamecam.target.y = screen_height() / scalex2;
+        gamecam.target.y = screen_height() / scalex2 - 25.;
 
         // ██╗███╗   ██╗██████╗ ██╗   ██╗████████╗
         // ██║████╗  ██║██╔══██╗██║   ██║╚══██╔══╝
@@ -90,19 +89,29 @@ async fn main() {
         let mouse_pos_world = &gamecam.screen_to_world(mouse_pos.into());
         let mouse_tile = (mouse_pos_world.x as i16 / Si, mouse_pos_world.y as i16 / Si);
 
+        let mut left_click = input::is_mouse_button_pressed(MouseButton::Left);
+        let right_click = input::is_mouse_button_pressed(MouseButton::Right);
+        let mid_click = input::is_mouse_button_pressed(MouseButton::Middle);
+
+        if menu_open {
+            root_ui().window(hash!(), vec2(0., 0.), vec2(200., 400.), |ui| {
+                if is_mouse_button_pressed(MouseButton::Left) {
+                    left_click = false;
+                }
+                ui.button(vec2(0., 0.), "testing");
+            });
+        }
+
         if !world.game_over {
             // OPEN tile
-            let left_click = input::is_mouse_button_pressed(MouseButton::Left);
             if left_click {
                 world.open_tile(mouse_tile.0 as usize, mouse_tile.1 as usize);
             }
             // FLAG tile
-            let right_click = input::is_mouse_button_pressed(MouseButton::Right);
             if right_click {
                 world.flag_tile(mouse_tile.0 as usize, mouse_tile.1 as usize);
             }
             // CHORD tile
-            let mid_click = input::is_mouse_button_pressed(MouseButton::Middle);
             if mid_click {
                 world.chord_tile(mouse_tile.0 as usize, mouse_tile.1 as usize);
             }
@@ -190,7 +199,7 @@ async fn main() {
                 draw_text_ex(
                     &format!("{t}"),
                     S * 2. * j as f32 + 12.,
-                    S * 2. * i as f32 + 24.,
+                    S * 2. * i as f32 + 24. + 50.,
                     TextParams {
                         font_size: 24,
                         color: Color::from_rgba(255, 255, 255, 200),
@@ -214,7 +223,7 @@ async fn main() {
                 if t == false {
                     draw_rectangle(
                         S * 2. * j as f32,
-                        S * 2. * i as f32,
+                        S * 2. * i as f32 + 50.,
                         S * 2.,
                         S * 2.,
                         Color::from_rgba(0, 0, 0, 255),
@@ -222,7 +231,7 @@ async fn main() {
 
                     draw_rectangle_lines(
                         S * 2. * j as f32,
-                        S * 2. * i as f32,
+                        S * 2. * i as f32 + 50.,
                         S * 2.,
                         S * 2.,
                         2.,
@@ -248,7 +257,7 @@ async fn main() {
                 draw_texture_ex(
                     &interface_tex,
                     S * 2. * j as f32,
-                    S * 2. * i as f32,
+                    S * 2. * i as f32 + 50.,
                     WHITE,
                     DrawTextureParams {
                         dest_size: dest_size2,
@@ -269,11 +278,6 @@ async fn main() {
                 WHITE,
             );
         }
-
-        widgets::Window::new(hash!(), vec2(0., 0.), vec2(200., 400.))
-            .label("Config")
-            .titlebar(true)
-            .ui(&mut *root_ui(), |ui| {});
 
         next_frame().await;
     }

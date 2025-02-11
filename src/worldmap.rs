@@ -80,8 +80,9 @@ impl WorldMap {
 
     pub fn flag_tile(&mut self, x: usize, y: usize) {
         // clamp x y
-        let x = if x >= self.mapw { self.mapw - 1 } else { x };
-        let y = if y >= self.maph { self.maph - 1 } else { y };
+        if x >= self.mapw || y >= self.maph {
+            return;
+        }
 
         if self.open[y][x] {
             return;
@@ -118,8 +119,9 @@ impl WorldMap {
 
     pub fn open_tile(&mut self, x: usize, y: usize) -> bool {
         // clamp x y
-        let x = if x >= self.mapw { self.mapw - 1 } else { x };
-        let y = if y >= self.maph { self.maph - 1 } else { y };
+        if x >= self.mapw || y >= self.maph {
+            return false;
+        }
 
         // move mines out of way for first click
         if self.first {

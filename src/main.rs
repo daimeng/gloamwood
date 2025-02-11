@@ -87,9 +87,15 @@ async fn main() {
         //
         mouse_pos = input::mouse_position();
         let mouse_pos_world = &gamecam.screen_to_world(mouse_pos.into());
-        let mouse_tile = (mouse_pos_world.x as i16 / Si, mouse_pos_world.y as i16 / Si);
+        let mouse_tile = (
+            (mouse_pos_world.x / S).floor() as i16,
+            (mouse_pos_world.y / S).floor() as i16,
+        );
 
         let mut left_click = input::is_mouse_button_pressed(MouseButton::Left);
+        if left_click {
+            println!("Clicked: {:?} {:?}", mouse_pos_world, mouse_tile);
+        }
         let right_click = input::is_mouse_button_pressed(MouseButton::Right);
         let mid_click = input::is_mouse_button_pressed(MouseButton::Middle);
 
@@ -103,17 +109,19 @@ async fn main() {
         }
 
         if !world.game_over {
-            // OPEN tile
-            if left_click {
-                world.open_tile(mouse_tile.0 as usize, mouse_tile.1 as usize);
-            }
-            // FLAG tile
-            if right_click {
-                world.flag_tile(mouse_tile.0 as usize, mouse_tile.1 as usize);
-            }
-            // CHORD tile
-            if mid_click {
-                world.chord_tile(mouse_tile.0 as usize, mouse_tile.1 as usize);
+            if mouse_tile.0 >= 0 && mouse_tile.1 >= 0 {
+                // OPEN tile
+                if left_click {
+                    world.open_tile(mouse_tile.0 as usize, mouse_tile.1 as usize);
+                }
+                // FLAG tile
+                if right_click {
+                    world.flag_tile(mouse_tile.0 as usize, mouse_tile.1 as usize);
+                }
+                // CHORD tile
+                if mid_click {
+                    world.chord_tile(mouse_tile.0 as usize, mouse_tile.1 as usize);
+                }
             }
         }
 
@@ -124,6 +132,8 @@ async fn main() {
         }
 
         clear_background(BG_COLOR);
+
+        draw_text("Menu", 0., 30., 24., WHITE);
 
         set_camera(&gamecam);
 

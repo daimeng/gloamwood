@@ -96,16 +96,31 @@ async fn main() {
         if left_click {
             println!("Clicked: {:?} {:?}", mouse_pos_world, mouse_tile);
         }
-        let right_click = input::is_mouse_button_pressed(MouseButton::Right);
-        let mid_click = input::is_mouse_button_pressed(MouseButton::Middle);
+        let mut right_click = input::is_mouse_button_pressed(MouseButton::Right);
+        let mut mid_click = input::is_mouse_button_pressed(MouseButton::Middle);
+
+        // open menu if clicked
+        if root_ui().button(vec2(0., 0.), "Menu") {
+            menu_open = true;
+        };
 
         if menu_open {
-            root_ui().window(hash!(), vec2(0., 0.), vec2(200., 400.), |ui| {
-                if is_mouse_button_pressed(MouseButton::Left) {
+            root_ui().window(
+                hash!(),
+                vec2(screen_width() / 2. - 100., screen_width() / 2. - 400.),
+                vec2(200., 400.),
+                |ui| {
+                    // capture mouse clicks
+                    let lclick = left_click;
+                    let rclick = right_click;
+                    let mclick = mid_click;
                     left_click = false;
-                }
-                ui.button(vec2(0., 0.), "testing");
-            });
+                    right_click = false;
+                    mid_click = false;
+
+                    ui.button(vec2(40., 350.), "Close");
+                },
+            );
         }
 
         if !world.game_over {
@@ -132,8 +147,6 @@ async fn main() {
         }
 
         clear_background(BG_COLOR);
-
-        draw_text("Menu", 0., 30., 24., WHITE);
 
         set_camera(&gamecam);
 

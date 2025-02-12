@@ -382,7 +382,7 @@ async fn main() {
                 screen_width() / 2. - center.x,
                 screen_height() / 2. - center.y,
                 48.,
-                WHITE,
+                Color::new(1., 1., 1., 0.7),
             );
         }
 

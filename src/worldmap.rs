@@ -61,13 +61,37 @@ impl WorldMap {
         rng.srand(date::now() as u64);
 
         self.gen_pool.shuffle_with_state(&rng);
-        for i in 0..mines {
+        let lvl1s = mines / 2;
+        for i in 0..lvl1s {
             self.gen_i += 1;
             let n = self.gen_pool[i];
             let y = n / self.mapw;
             let x = n - y * self.mapw;
             self.set_monster(x, y, 1);
             self.counts[1] += 1;
+        }
+
+        let lvl2s = mines / 4;
+        let lowlvls = lvl2s + lvl1s;
+
+        for i in lvl1s..lowlvls {
+            self.gen_i += 1;
+            let n = self.gen_pool[i];
+            let y = n / self.mapw;
+            let x = n - y * self.mapw;
+            self.set_monster(x, y, 2);
+            self.counts[2] += 1;
+        }
+
+        for i in lowlvls..mines {
+            self.gen_i += 1;
+            let lvl: i16 = (rng.gen_range(-6, 6) + rng.gen_range(-6, 6)) / 2;
+            let lvlabs = 3 + lvl.abs();
+            let n = self.gen_pool[i];
+            let y = n / self.mapw;
+            let x = n - y * self.mapw;
+            self.set_monster(x, y, lvlabs);
+            self.counts[lvlabs as usize] += 1;
         }
     }
 

@@ -218,7 +218,7 @@ async fn main() {
         // ██║  ██║██╔══██╗██╔══██║██║███╗██║    ██╔══██║██║   ██║██╔══██╗██╔══██║
         // ██████╔╝██║  ██║██║  ██║╚███╔███╔╝    ██║  ██║╚██████╔╝██║  ██║██║  ██║
         // ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝ ╚══╝╚══╝     ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝
-        //
+        // AURA
         for i in 0..maph {
             for j in 0..mapw {
                 let t = world.auras[i][j];
@@ -226,16 +226,29 @@ async fn main() {
                     continue;
                 }
 
-                draw_text_ex(
-                    &format!("{t}"),
-                    S * 2. * j as f32 + 12.,
-                    S * 2. * i as f32 + 24. + 50.,
-                    TextParams {
-                        font_size: 24,
-                        color: Color::from_rgba(255, 255, 255, 200),
-                        ..Default::default()
-                    },
-                );
+                if t < 10 {
+                    draw_text_ex(
+                        &format!("{t}"),
+                        S * 2. * j as f32 + 10.,
+                        S * 2. * i as f32 + 22. + 50.,
+                        TextParams {
+                            font_size: 24,
+                            color: Color::from_rgba(255, 255, 255, 200),
+                            ..Default::default()
+                        },
+                    );
+                } else {
+                    draw_text_ex(
+                        &format!("{t}"),
+                        S * 2. * j as f32 + 6.,
+                        S * 2. * i as f32 + 21. + 50.,
+                        TextParams {
+                            font_size: 22,
+                            color: Color::from_rgba(255, 255, 255, 200),
+                            ..Default::default()
+                        },
+                    );
+                }
             }
         }
 
@@ -245,7 +258,7 @@ async fn main() {
         // ██║  ██║██╔══██╗██╔══██║██║███╗██║    ██╔══╝  ██║   ██║██║   ██║
         // ██████╔╝██║  ██║██║  ██║╚███╔███╔╝    ██║     ╚██████╔╝╚██████╔╝
         // ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝ ╚══╝╚══╝     ╚═╝      ╚═════╝  ╚═════╝
-        //
+        // FOG
         for i in 0..maph {
             for j in 0..mapw {
                 let t = world.open[i][j];

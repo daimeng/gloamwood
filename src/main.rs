@@ -261,6 +261,9 @@ async fn main() {
                 if t == 0 {
                     continue;
                 }
+                if world.monsters[i][j] > 0 {
+                    continue;
+                }
 
                 if t < 10 {
                     draw_text_ex(

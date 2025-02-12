@@ -140,6 +140,18 @@ impl WorldMap {
         }
     }
 
+    pub fn end_game(&mut self) {
+        self.game_over = true;
+
+        for i in 0..self.maph {
+            for j in 0..self.mapw {
+                if self.monsters[i][j] > 0 {
+                    self.open[i][j] = true;
+                }
+            }
+        }
+    }
+
     pub fn open_tile(&mut self, x: usize, y: usize) -> bool {
         // clamp x y
         if x >= self.mapw || y >= self.maph {
@@ -171,7 +183,7 @@ impl WorldMap {
 
             // lose if opened a square with a monster
             if self.monsters[y][x] != 0 {
-                self.game_over = true;
+                self.end_game();
             }
 
             if self.auras[y][x] > 0 {

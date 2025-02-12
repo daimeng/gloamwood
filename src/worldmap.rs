@@ -73,11 +73,15 @@ impl WorldMap {
             self.counts[i] += 1;
         }
 
+        let mut balance = 0;
         for i in 9..mines {
             self.gen_i += 1;
-            let lvl: i16 = (rng.gen_range(-8, 9) + rng.gen_range(-8, 9)) / 2;
-            let lvlabs = 1 + lvl.abs();
+            let lvl: i16 = (rng.gen_range(-9, 10) + rng.gen_range(-9, 10)) / 2;
+            let lvlabs = (lvl.abs() + balance).max(1).min(9);
+
             total += lvlabs;
+            balance = if total > 3 * i as i16 { -1 } else { 1 };
+
             let n = self.gen_pool[i];
             let y = n / self.mapw;
             let x = n - y * self.mapw;

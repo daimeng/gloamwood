@@ -314,7 +314,7 @@ async fn main() {
             }
         }
 
-        for i in 1..9 {
+        for i in 1..=9 {
             draw_text(
                 &format!("{:02}x", world.counts[i]),
                 100. * (i - 1) as f32 + 10.,

@@ -16,7 +16,7 @@ pub struct WorldMap {
     gen_pool: Vec<usize>,
     gen_i: usize,
     first: bool,
-    pub counts: [i16; 9],
+    pub counts: [i16; 10],
 }
 
 fn neighbors(x: usize, y: usize, w: usize, h: usize) -> impl Iterator<Item = (usize, usize)> {
@@ -52,7 +52,7 @@ impl WorldMap {
             gen_pool: (0..mapw * maph).collect(),
             gen_i: 0,
             first: true,
-            counts: [0; 9],
+            counts: [0; 10],
         }
     }
 
@@ -85,7 +85,7 @@ impl WorldMap {
 
         for i in lowlvls..mines {
             self.gen_i += 1;
-            let lvl: i16 = (rng.gen_range(-6, 6) + rng.gen_range(-6, 6)) / 2;
+            let lvl: i16 = (rng.gen_range(-7, 7) + rng.gen_range(-7, 7)) / 2;
             let lvlabs = 3 + lvl.abs();
             let n = self.gen_pool[i];
             let y = n / self.mapw;
@@ -114,7 +114,7 @@ impl WorldMap {
         if self.open[y][x] {
             return;
         }
-        self.flags[y][x] = (self.flags[y][x] + 1) % 6;
+        self.flags[y][x] = (self.flags[y][x] + 1) % 10;
     }
 
     pub fn remine(&mut self, x: usize, y: usize) {

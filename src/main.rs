@@ -149,17 +149,22 @@ async fn main() {
 
         if !world.game_over {
             if mouse_tile.0 >= 0 && mouse_tile.1 >= 0 {
+                let x = mouse_tile.0 as usize;
+                let y = mouse_tile.1 as usize;
                 // OPEN tile
                 if left_click {
-                    world.open_tile(mouse_tile.0 as usize, mouse_tile.1 as usize);
+                    // guard against accidental click
+                    if world.flags[y][x] == 0 {
+                        world.open_tile(x, y);
+                    }
                 }
                 // FLAG tile
                 if right_click {
-                    world.flag_tile(mouse_tile.0 as usize, mouse_tile.1 as usize);
+                    world.flag_tile(x, y);
                     flagged_t = t;
                 } else if t - right_click_t > 0.2 && right_down {
                     if t - flagged_t > flag_cd {
-                        world.flag_tile(mouse_tile.0 as usize, mouse_tile.1 as usize);
+                        world.flag_tile(x, y);
                         flagged_t = t;
                         // increase cd each time
                         flag_cd = flag_cd * 1.5 + 0.01;
@@ -167,7 +172,7 @@ async fn main() {
                 }
                 // CHORD tile
                 if mid_click {
-                    world.chord_tile(mouse_tile.0 as usize, mouse_tile.1 as usize);
+                    world.chord_tile(x, y);
                 }
             }
         }

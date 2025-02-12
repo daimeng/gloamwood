@@ -2,6 +2,7 @@ use std::process::exit;
 
 use macroquad::input;
 use macroquad::prelude::*;
+use macroquad::time;
 use macroquad::ui::hash;
 use macroquad::ui::root_ui;
 mod mapgen;
@@ -71,7 +72,19 @@ async fn main() {
     let mut mouse_pos;
     let mut menu_open = false;
 
+    let mut last_game_time = time::get_time();
+    let mut left_click = false;
+    let mut right_click = false;
+    let mut right_click_t = last_game_time;
+    let mut mid_click = false;
+    let mut right_down = false;
+    let mut flagged_t = last_game_time;
+    let min_flag_cd = 0.02;
+    let mut flag_cd = min_flag_cd;
     loop {
+        let t = time::get_time();
+        let dt = last_game_time - t;
+
         // adjust camera in case of screen size changes
         gamecam.zoom.x = 1. / screen_width() * scalex2;
         gamecam.zoom.y = 1. / screen_height() * scalex2;
@@ -97,12 +110,16 @@ async fn main() {
             break;
         }
 
-        let mut left_click = input::is_mouse_button_pressed(MouseButton::Left);
+        left_click = input::is_mouse_button_pressed(MouseButton::Left);
+        right_click = input::is_mouse_button_pressed(MouseButton::Right);
+        mid_click = input::is_mouse_button_pressed(MouseButton::Middle);
+        right_down = input::is_mouse_button_down(MouseButton::Right);
+        if input::is_mouse_button_released(MouseButton::Right) {
+            flag_cd = min_flag_cd;
+        }
         if left_click {
             println!("Clicked: {:?} {:?}", mouse_pos_world, mouse_tile);
         }
-        let mut right_click = input::is_mouse_button_pressed(MouseButton::Right);
-        let mut mid_click = input::is_mouse_button_pressed(MouseButton::Middle);
 
         // open menu if clicked
         if root_ui().button(vec2(0., 0.), "Menu") {
@@ -139,6 +156,14 @@ async fn main() {
                 // FLAG tile
                 if right_click {
                     world.flag_tile(mouse_tile.0 as usize, mouse_tile.1 as usize);
+                    flagged_t = t;
+                } else if t - right_click_t > 0.2 && right_down {
+                    if t - flagged_t > flag_cd {
+                        world.flag_tile(mouse_tile.0 as usize, mouse_tile.1 as usize);
+                        flagged_t = t;
+                        // increase cd each time
+                        flag_cd = flag_cd * 1.5 + 0.01;
+                    }
                 }
                 // CHORD tile
                 if mid_click {
@@ -146,6 +171,12 @@ async fn main() {
                 }
             }
         }
+
+        // upate last time trackers
+        if right_click {
+            right_click_t = t
+        }
+        last_game_time = t;
 
         // Restart
         let r_pressed = input::is_key_pressed(KeyCode::R);

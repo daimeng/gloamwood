@@ -1,3 +1,5 @@
+use std::process::exit;
+
 use macroquad::input;
 use macroquad::prelude::*;
 use macroquad::ui::hash;
@@ -89,6 +91,11 @@ async fn main() {
             (mouse_pos_world.x / S).floor() as i16,
             (mouse_pos_world.y / S).floor() as i16,
         );
+
+        // Exit on escape key
+        if input::is_key_pressed(KeyCode::Escape) {
+            break;
+        }
 
         let mut left_click = input::is_mouse_button_pressed(MouseButton::Left);
         if left_click {
@@ -249,16 +256,19 @@ async fn main() {
                         S * 2. * i as f32 + 50.,
                         S * 2.,
                         S * 2.,
-                        Color::from_rgba(0, 0, 0, 255),
+                        BG_COLOR,
                     );
 
-                    draw_rectangle_lines(
+                    draw_texture_ex(
+                        &tiles_tex,
                         S * 2. * j as f32,
                         S * 2. * i as f32 + 50.,
-                        S * 2.,
-                        S * 2.,
-                        2.,
-                        Color::from_rgba(50, 50, 50, 255),
+                        WHITE,
+                        DrawTextureParams {
+                            dest_size: dest_size2,
+                            source: Some(Rect::new(0., S, S * 2., S * 2.)),
+                            ..Default::default()
+                        },
                     );
                 }
             }

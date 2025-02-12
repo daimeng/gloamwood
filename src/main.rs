@@ -361,7 +361,7 @@ async fn main() {
                 WHITE,
                 DrawTextureParams {
                     dest_size: dest_size2,
-                    source: Some(Rect::new(S * 1 as f32, S * 0 as f32, S, S)),
+                    source: Some(Rect::new(S * i as f32, S * 0 as f32, S, S)),
                     ..Default::default()
                 },
             );

@@ -61,38 +61,30 @@ impl WorldMap {
         rng.srand(date::now() as u64);
 
         self.gen_pool.shuffle_with_state(&rng);
-        let lvl1s = mines / 2;
-        for i in 0..lvl1s {
+        let mut total = 0;
+
+        for i in 1..10 {
             self.gen_i += 1;
+            total += i as i16;
             let n = self.gen_pool[i];
             let y = n / self.mapw;
             let x = n - y * self.mapw;
-            self.set_monster(x, y, 1);
-            self.counts[1] += 1;
+            self.set_monster(x, y, i as i16);
+            self.counts[i] += 1;
         }
 
-        let lvl2s = mines / 4;
-        let lowlvls = lvl2s + lvl1s;
-
-        for i in lvl1s..lowlvls {
+        for i in 9..mines {
             self.gen_i += 1;
-            let n = self.gen_pool[i];
-            let y = n / self.mapw;
-            let x = n - y * self.mapw;
-            self.set_monster(x, y, 2);
-            self.counts[2] += 1;
-        }
-
-        for i in lowlvls..mines {
-            self.gen_i += 1;
-            let lvl: i16 = (rng.gen_range(-7, 7) + rng.gen_range(-7, 7)) / 2;
-            let lvlabs = 3 + lvl.abs();
+            let lvl: i16 = (rng.gen_range(-8, 9) + rng.gen_range(-8, 9)) / 2;
+            let lvlabs = 1 + lvl.abs();
+            total += lvlabs;
             let n = self.gen_pool[i];
             let y = n / self.mapw;
             let x = n - y * self.mapw;
             self.set_monster(x, y, lvlabs);
             self.counts[lvlabs as usize] += 1;
         }
+        println!("{}", total);
     }
 
     pub fn set_monster(&mut self, x: usize, y: usize, n: i16) {

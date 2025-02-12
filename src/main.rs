@@ -13,12 +13,10 @@ const TERRAIN_TINT: Color = color_u8!(255, 255, 255, 150);
 
 #[macroquad::main("Gloamwood")]
 async fn main() {
+    set_default_filter_mode(FilterMode::Nearest);
     let tiles_tex = load_texture("assets/tiles.png").await.unwrap();
-    tiles_tex.set_filter(FilterMode::Nearest);
     let chars_tex = load_texture("assets/chars.png").await.unwrap();
-    chars_tex.set_filter(FilterMode::Nearest);
     let interface_tex = load_texture("assets/interface.png").await.unwrap();
-    interface_tex.set_filter(FilterMode::Nearest);
 
     let mapw = 30;
     let maph = 16;
@@ -118,7 +116,9 @@ async fn main() {
                     right_click = false;
                     mid_click = false;
 
-                    ui.button(vec2(40., 350.), "Close");
+                    if ui.button(vec2(40., 350.), "Close") {
+                        menu_open = false;
+                    }
                 },
             );
         }
@@ -289,6 +289,28 @@ async fn main() {
                     },
                 );
             }
+        }
+
+        for i in 1..9 {
+            draw_text(
+                &format!("{:02}x", world.counts[i]),
+                100. * (i - 1) as f32 + 10.,
+                596.,
+                32.,
+                WHITE,
+            );
+
+            draw_texture_ex(
+                &chars_tex,
+                100. * (i - 1) as f32 + 48.,
+                596. - 24.,
+                WHITE,
+                DrawTextureParams {
+                    dest_size: dest_size2,
+                    source: Some(Rect::new(S * 1 as f32, S * 0 as f32, S, S)),
+                    ..Default::default()
+                },
+            );
         }
 
         if world.game_over {

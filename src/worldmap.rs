@@ -16,6 +16,7 @@ pub struct WorldMap {
     gen_pool: Vec<usize>,
     gen_i: usize,
     first: bool,
+    pub counts: [i16; 9],
 }
 
 fn neighbors(x: usize, y: usize, w: usize, h: usize) -> impl Iterator<Item = (usize, usize)> {
@@ -51,6 +52,7 @@ impl WorldMap {
             gen_pool: (0..mapw * maph).collect(),
             gen_i: 0,
             first: true,
+            counts: [0; 9],
         }
     }
 
@@ -65,6 +67,7 @@ impl WorldMap {
             let y = n / self.mapw;
             let x = n - y * self.mapw;
             self.set_monster(x, y, 1);
+            self.counts[1] += 1;
         }
     }
 

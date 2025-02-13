@@ -1,5 +1,3 @@
-use std::process::exit;
-
 use macroquad::input;
 use macroquad::prelude::*;
 use macroquad::time;
@@ -12,7 +10,8 @@ const Si: i16 = 16;
 const S: f32 = Si as f32;
 
 const BG_COLOR: Color = color_u8!(15, 15, 23, 255);
-const TERRAIN_TINT: Color = color_u8!(255, 255, 255, 150);
+// const TERRAIN_TINT: Color = color_u8!(255, 255, 255, 150);
+const TERRAIN_TINT: Color = WHITE;
 
 #[macroquad::main("Gloamwood")]
 async fn main() {
@@ -53,11 +52,13 @@ async fn main() {
         mapgen::genmap_fissure(&mut genterrains);
         // println!("{:?}", &genterrains);
 
+        println!("{:?}", genterrains);
         let terrains: Vec<Vec<i16>> = genterrains
             .iter()
             .map(|row| {
                 row.iter()
-                    .map(|c| (c.max(0.) * 100.).round() as i16)
+                    // .map(|c| (c.abs() * 90.).round() as i16)
+                    .map(|c| ((c.max(-0.06) + 0.06) * 60.).round() as i16)
                     .collect()
             })
             .collect();
@@ -298,30 +299,33 @@ async fn main() {
         // ██████╔╝██║  ██║██║  ██║╚███╔███╔╝    ██║     ╚██████╔╝╚██████╔╝
         // ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝ ╚══╝╚══╝     ╚═╝      ╚═════╝  ╚═════╝
         // FOG
-        for i in 0..maph {
-            for j in 0..mapw {
-                let t = world.open[i][j];
+        #[cfg(not(feature = "nofog"))]
+        {
+            for i in 0..maph {
+                for j in 0..mapw {
+                    let t = world.open[i][j];
 
-                if t == false {
-                    draw_rectangle(
-                        S * 2. * j as f32,
-                        S * 2. * i as f32 + 50.,
-                        S * 2.,
-                        S * 2.,
-                        BG_COLOR,
-                    );
+                    if t == false {
+                        draw_rectangle(
+                            S * 2. * j as f32,
+                            S * 2. * i as f32 + 50.,
+                            S * 2.,
+                            S * 2.,
+                            BG_COLOR,
+                        );
 
-                    draw_texture_ex(
-                        &tiles_tex,
-                        S * 2. * j as f32,
-                        S * 2. * i as f32 + 50.,
-                        WHITE,
-                        DrawTextureParams {
-                            dest_size: dest_size2,
-                            source: Some(Rect::new(0., S, S * 2., S * 2.)),
-                            ..Default::default()
-                        },
-                    );
+                        draw_texture_ex(
+                            &tiles_tex,
+                            S * 2. * j as f32,
+                            S * 2. * i as f32 + 50.,
+                            WHITE,
+                            DrawTextureParams {
+                                dest_size: dest_size2,
+                                source: Some(Rect::new(0., S, S * 2., S * 2.)),
+                                ..Default::default()
+                            },
+                        );
+                    }
                 }
             }
         }

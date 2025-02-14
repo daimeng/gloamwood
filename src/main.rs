@@ -10,12 +10,13 @@ const Si: i16 = 16;
 const S: f32 = Si as f32;
 
 const BG_COLOR: Color = color_u8!(15, 15, 23, 255);
-// const TERRAIN_TINT: Color = color_u8!(255, 255, 255, 150);
-const TERRAIN_TINT: Color = WHITE;
+const TERRAIN_TINT: Color = color_u8!(255, 255, 255, 220);
+// const TERRAIN_TINT: Color = WHITE;
 
 #[macroquad::main("Gloamwood")]
 async fn main() {
     set_default_filter_mode(FilterMode::Nearest);
+    let font = load_ttf_font("assets/SyneMono-Regular.ttf").await.unwrap();
     let tiles_tex = load_texture("assets/tiles.png").await.unwrap();
     let chars_tex = load_texture("assets/chars.png").await.unwrap();
     let interface_tex = load_texture("assets/interface.png").await.unwrap();
@@ -269,22 +270,24 @@ async fn main() {
                 if t < 10 {
                     draw_text_ex(
                         &format!("{t}"),
-                        S * 2. * j as f32 + 10.,
-                        S * 2. * i as f32 + 22. + 50.,
+                        S * 2. * j as f32 + 9.,
+                        S * 2. * i as f32 + 23. + 50.,
                         TextParams {
+                            font: Some(&font),
                             font_size: 24,
-                            color: Color::from_rgba(255, 255, 255, 200),
+                            color: Color::from_rgba(255, 255, 255, 255),
                             ..Default::default()
                         },
                     );
                 } else {
                     draw_text_ex(
                         &format!("{t}"),
-                        S * 2. * j as f32 + 6.,
-                        S * 2. * i as f32 + 21. + 50.,
+                        S * 2. * j as f32 + 3.,
+                        S * 2. * i as f32 + 23. + 50.,
                         TextParams {
+                            font: Some(&font),
                             font_size: 22,
-                            color: Color::from_rgba(255, 255, 255, 200),
+                            color: Color::from_rgba(255, 255, 255, 255),
                             ..Default::default()
                         },
                     );

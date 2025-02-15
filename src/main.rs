@@ -11,7 +11,6 @@ const S: f32 = Si as f32;
 
 const BG_COLOR: Color = color_u8!(25, 25, 37, 255);
 const TERRAIN_TINT: Color = color_u8!(255, 255, 255, 220);
-// const TERRAIN_TINT: Color = WHITE;
 
 #[macroquad::main("Gloamwood")]
 async fn main() {
@@ -21,9 +20,12 @@ async fn main() {
     let chars_tex = load_texture("assets/chars.png").await.unwrap();
     let interface_tex = load_texture("assets/interface.png").await.unwrap();
 
-    let mapw = 30;
-    let maph = 16;
-    let mines = 99;
+    // let mapw = 30;
+    // let maph = 16;
+    // let mines = 99;
+    let mapw = 50;
+    let maph = 25;
+    let mines = 300;
     let scale = 2.;
     let scalex2 = scale * 2.;
 
@@ -364,15 +366,15 @@ async fn main() {
             draw_text(
                 &format!("{:02}x", world.counts[i]),
                 100. * (i - 1) as f32 + 10.,
-                596.,
+                screen_height() - 10.,
                 32.,
                 WHITE,
             );
 
             draw_texture_ex(
                 &chars_tex,
-                100. * (i - 1) as f32 + 48.,
-                596. - 24.,
+                100. * (i - 1) as f32 + if world.counts[i] > 99 { 64. } else { 48. },
+                screen_height() - 10. - 24.,
                 WHITE,
                 DrawTextureParams {
                     dest_size: dest_size2,

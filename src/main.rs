@@ -20,12 +20,12 @@ async fn main() {
     let chars_tex = load_texture("assets/chars.png").await.unwrap();
     let interface_tex = load_texture("assets/interface.png").await.unwrap();
 
-    // let mapw = 30;
-    // let maph = 16;
-    // let mines = 99;
-    let mapw = 50;
-    let maph = 25;
-    let mines = 300;
+    let mapw = 30;
+    let maph = 16;
+    let mines = 99;
+    // let mapw = 50;
+    // let maph = 25;
+    // let mines = 300;
     let scale = 2.;
     let scalex2 = scale * 2.;
 
@@ -101,7 +101,7 @@ async fn main() {
         // ██║██║╚██╗██║██╔═══╝ ██║   ██║   ██║
         // ██║██║ ╚████║██║     ╚██████╔╝   ██║
         // ╚═╝╚═╝  ╚═══╝╚═╝      ╚═════╝    ╚═╝
-        //
+        // INPUT
         mouse_pos = input::mouse_position();
         let mouse_pos_world = &gamecam.screen_to_world(mouse_pos.into());
         let mouse_tile = (
@@ -164,16 +164,42 @@ async fn main() {
                 }
                 // FLAG tile
                 if right_click {
-                    world.flag_tile(x, y);
+                    world.flag_tile_inc(x, y);
                     flagged_t = t;
                 } else if t - right_click_t > 0.2 && right_down {
                     if t - flagged_t > flag_cd {
-                        world.flag_tile(x, y);
+                        world.flag_tile_inc(x, y);
                         flagged_t = t;
                         // increase cd each time
                         flag_cd = flag_cd * 1.5 + 0.01;
                     }
                 }
+
+                // Number key flagging
+                if input::is_key_pressed(KeyCode::Key0)
+                    || input::is_key_pressed(KeyCode::Apostrophe)
+                {
+                    world.flag_tile(x, y, 0);
+                } else if input::is_key_pressed(KeyCode::Key1) {
+                    world.flag_tile(x, y, 1);
+                } else if input::is_key_pressed(KeyCode::Key2) {
+                    world.flag_tile(x, y, 2);
+                } else if input::is_key_pressed(KeyCode::Key3) {
+                    world.flag_tile(x, y, 3);
+                } else if input::is_key_pressed(KeyCode::Key4) {
+                    world.flag_tile(x, y, 4);
+                } else if input::is_key_pressed(KeyCode::Key5) {
+                    world.flag_tile(x, y, 5);
+                } else if input::is_key_pressed(KeyCode::Key6) {
+                    world.flag_tile(x, y, 6);
+                } else if input::is_key_pressed(KeyCode::Key7) {
+                    world.flag_tile(x, y, 7);
+                } else if input::is_key_pressed(KeyCode::Key8) {
+                    world.flag_tile(x, y, 8);
+                } else if input::is_key_pressed(KeyCode::Key9) {
+                    world.flag_tile(x, y, 9);
+                }
+
                 // CHORD tile
                 if mid_click {
                     world.chord_tile(x, y);

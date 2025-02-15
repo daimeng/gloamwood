@@ -101,7 +101,7 @@ impl WorldMap {
         }
     }
 
-    pub fn flag_tile(&mut self, x: usize, y: usize) {
+    pub fn flag_tile_inc(&mut self, x: usize, y: usize) {
         // clamp x y
         if x >= self.mapw || y >= self.maph {
             return;
@@ -110,7 +110,25 @@ impl WorldMap {
         if self.open[y][x] {
             return;
         }
+
         self.flags[y][x] = (self.flags[y][x] + 1) % 10;
+    }
+
+    pub fn flag_tile(&mut self, x: usize, y: usize, num: i16) {
+        // clamp x y
+        if x >= self.mapw || y >= self.maph {
+            return;
+        }
+
+        if self.open[y][x] {
+            return;
+        }
+
+        if self.flags[y][x] == num {
+            self.flags[y][x] = 0;
+        } else {
+            self.flags[y][x] = num;
+        }
     }
 
     pub fn remine(&mut self, x: usize, y: usize) {

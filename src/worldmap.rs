@@ -240,7 +240,12 @@ impl WorldMap {
         // sum current values
         let mut sum = 0;
         for (xx, yy) in neighbors(x, y, self.mapw, self.maph) {
-            sum += self.flags[yy][xx];
+            // handle open tile cases
+            if self.open[yy][xx] {
+                sum += self.monsters[yy][xx];
+            } else {
+                sum += self.flags[yy][xx];
+            }
         }
 
         if sum == aura {

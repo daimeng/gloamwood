@@ -3,6 +3,8 @@ use macroquad::{
     rand::{ChooseRandom, RandGenerator},
 };
 
+use crate::char::Char;
+
 pub struct WorldMap {
     mapw: usize,
     maph: usize,
@@ -170,7 +172,7 @@ impl WorldMap {
         }
     }
 
-    pub fn open_tile(&mut self, x: usize, y: usize) -> bool {
+    pub fn open_tile(&mut self, x: usize, y: usize, hero: &mut Char) -> bool {
         // clamp x y
         if x >= self.mapw || y >= self.maph {
             return false;
@@ -199,10 +201,7 @@ impl WorldMap {
             self.open[y][x] = true;
             self.flags[y][x] = 0;
 
-            // lose if opened a square with a monster
-            if self.monsters[y][x] != 0 {
-                self.end_game();
-            }
+            hero.fight(self.monsters[y][x]);
 
             if self.auras[y][x] > 0 {
                 continue;
@@ -225,7 +224,8 @@ impl WorldMap {
         self.open[y][x]
     }
 
-    pub fn chord_tile(&mut self, x: usize, y: usize) {
+    // TODO: work through lowest level monsters first in case leveling in middle
+    pub fn chord_tile(&mut self, x: usize, y: usize, hero: &mut Char) {
         // only chord open tiles
         if !self.open[y][x] {
             return;
@@ -249,7 +249,7 @@ impl WorldMap {
                     continue;
                 }
 
-                self.open_tile(xx, yy);
+                self.open_tile(xx, yy, hero);
             }
         }
     }

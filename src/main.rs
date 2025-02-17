@@ -1,8 +1,11 @@
+use char::Char;
+use char::Class;
 use macroquad::input;
 use macroquad::prelude::*;
 use macroquad::time;
 use macroquad::ui::hash;
 use macroquad::ui::root_ui;
+mod char;
 mod mapgen;
 mod worldmap;
 
@@ -50,6 +53,8 @@ async fn main() {
     // ██║██║ ╚████║██║   ██║
     // ╚═╝╚═╝  ╚═══╝╚═╝   ╚═╝
     //
+    let mut hero = Char::new(Class::Hero);
+
     let init = |mapw: usize, maph: usize, mines: usize| {
         let mut genterrains = vec![vec![0f32; mapw]; maph];
         mapgen::genmap_fissure(&mut genterrains);
@@ -73,6 +78,7 @@ async fn main() {
     };
 
     let mut world = init(mapw, maph, mines);
+
     let mut mouse_pos;
     let mut menu_open = false;
 
@@ -159,7 +165,7 @@ async fn main() {
                 if left_click {
                     // guard against accidental click
                     if world.flags[y][x] == 0 {
-                        world.open_tile(x, y);
+                        world.open_tile(x, y, &mut hero);
                     }
                 }
                 // FLAG tile
@@ -202,9 +208,14 @@ async fn main() {
 
                 // CHORD tile
                 if mid_click {
-                    world.chord_tile(x, y);
+                    world.chord_tile(x, y, &mut hero);
                 }
             }
+        }
+
+        // if less than level 1, dead
+        if hero.level < 1 {
+            world.end_game();
         }
 
         // upate last time trackers
@@ -216,6 +227,7 @@ async fn main() {
         // Restart
         let r_pressed = input::is_key_pressed(KeyCode::R);
         if r_pressed {
+            hero = Char::new(Class::Hero);
             world = init(mapw, maph, mines);
         }
 

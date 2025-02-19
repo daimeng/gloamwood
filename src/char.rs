@@ -9,6 +9,8 @@ pub struct Char {
     pub level: i16,
     pub exprate: i16,
     exp: i16,
+    pub max_hp: i16,
+    pub hp: i16,
 }
 
 impl Char {
@@ -19,18 +21,19 @@ impl Char {
                 level: 1,
                 exprate: 2,
                 exp: 0,
+                max_hp: 100,
+                hp: 100,
             },
         }
     }
 
+    pub fn open(&mut self) {}
+
     pub fn fight(&mut self, monster: i16) {
-        match self.class {
-            _ => {
-                if monster > self.level {
-                    // if monster is too tough subtract half of monster level rounded up.
-                    self.level -= (monster + 1) / 2;
-                }
-            }
+        if monster > self.level {
+            self.level = 0;
+        } else {
+            self.exp += 1;
         }
     }
 }

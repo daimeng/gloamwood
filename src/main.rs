@@ -6,7 +6,9 @@ use macroquad::time;
 use macroquad::ui::hash;
 use macroquad::ui::root_ui;
 mod char;
+mod effects;
 mod mapgen;
+mod monster;
 mod worldmap;
 
 const Si: i16 = 16;
@@ -25,7 +27,7 @@ async fn main() {
 
     let mapw = 30;
     let maph = 16;
-    let mines = 99;
+    let mines = 120;
     // let mapw = 50;
     // let maph = 25;
     // let mines = 300;
@@ -60,7 +62,6 @@ async fn main() {
         mapgen::genmap_fissure(&mut genterrains);
         // println!("{:?}", &genterrains);
 
-        println!("{:?}", genterrains);
         let terrains: Vec<Vec<i16>> = genterrains
             .iter()
             .map(|row| {

@@ -3,12 +3,14 @@ use macroquad::{
     rand::{ChooseRandom, RandGenerator},
 };
 
-use crate::char::Char;
+use crate::monster::Monster;
+use crate::{char::Char, monster};
 
 pub struct WorldMap {
     mapw: usize,
     maph: usize,
     pub terrains: Vec<Vec<i16>>,
+    pub mlist: Vec<Vec<Monster>>,
     pub monsters: Vec<Vec<i16>>,
     pub auras: Vec<Vec<i16>>,
     pub open: Vec<Vec<bool>>,
@@ -45,6 +47,7 @@ impl WorldMap {
             mapw,
             maph,
             terrains: vec![vec![0; mapw]; maph],
+            mlist: vec![vec![Monster::new(&monster::WOLF); mapw]; maph],
             monsters: vec![vec![0; mapw]; maph],
             auras: vec![vec![0; mapw]; maph],
             open: vec![vec![false; mapw]; maph],

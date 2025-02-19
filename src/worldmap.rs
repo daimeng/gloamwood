@@ -3,19 +3,20 @@ use macroquad::{
     rand::{ChooseRandom, RandGenerator},
 };
 
-use crate::monster::Monster;
-use crate::{char::Char, monster};
+use crate::{effect, entities};
+use crate::{effect::Effect, entities::Entity};
 
 pub struct WorldMap {
     mapw: usize,
     maph: usize,
     pub terrains: Vec<Vec<i16>>,
-    pub mlist: Vec<Vec<Monster>>,
-    pub monsters: Vec<Vec<i16>>,
+    pub entities: Vec<Vec<Entity>>,
     pub auras: Vec<Vec<i16>>,
     pub open: Vec<Vec<bool>>,
     pub flags: Vec<Vec<i16>>,
     pub game_over: bool,
+    pub effects: Vec<Effect>,
+    pub hero_pos: (usize, usize),
     search_buffer: Vec<(usize, usize)>,
     gen_pool: Vec<usize>,
     gen_i: usize,
@@ -47,11 +48,12 @@ impl WorldMap {
             mapw,
             maph,
             terrains: vec![vec![0; mapw]; maph],
-            mlist: vec![vec![Monster::new(&monster::WOLF); mapw]; maph],
-            monsters: vec![vec![0; mapw]; maph],
+            entities: vec![vec![entities::NONE; mapw]; maph],
             auras: vec![vec![0; mapw]; maph],
             open: vec![vec![false; mapw]; maph],
             flags: vec![vec![0; mapw]; maph],
+            effects: vec![effect::NONE; maph * mapw],
+            hero_pos: (0, 0),
             game_over: false,
             search_buffer: vec![(0, 0); maph * mapw],
             gen_pool: (0..mapw * maph).collect(),
@@ -68,41 +70,51 @@ impl WorldMap {
         self.gen_pool.shuffle_with_state(&rng);
         let mut total = 0;
 
-        for i in 1..10 {
+        for i in 0..mines {
             self.gen_i += 1;
-            total += i as i16;
+            total += 1 as i16;
             let n = self.gen_pool[i];
             let y = n / self.mapw;
             let x = n - y * self.mapw;
-            self.set_monster(x, y, i as i16);
-            self.counts[i] += 1;
+            self.set_monster(x, y, Entity::new(&entities::WOLF));
+            self.counts[1] += 1;
         }
 
-        let mut balance = 0;
-        for i in 9..mines {
-            self.gen_i += 1;
-            let lvl: i16 = (rng.gen_range(-9, 10) + rng.gen_range(-9, 10)) / 2;
-            let lvlabs = (lvl.abs() + balance).max(1).min(9);
+        // for i in 1..10 {
+        //     self.gen_i += 1;
+        //     total += i as i16;
+        //     let n = self.gen_pool[i];
+        //     let y = n / self.mapw;
+        //     let x = n - y * self.mapw;
+        //     self.set_monster(x, y, i as i16);
+        //     self.counts[i] += 1;
+        // }
 
-            total += lvlabs;
-            balance = if total > 3 * i as i16 { -1 } else { 1 };
+        // let mut balance = 0;
+        // for i in 9..mines {
+        //     self.gen_i += 1;
+        //     let lvl: i16 = (rng.gen_range(-9, 10) + rng.gen_range(-9, 10)) / 2;
+        //     let lvlabs = (lvl.abs() + balance).max(1).min(9);
 
-            let n = self.gen_pool[i];
-            let y = n / self.mapw;
-            let x = n - y * self.mapw;
-            self.set_monster(x, y, lvlabs);
-            self.counts[lvlabs as usize] += 1;
-        }
+        //     total += lvlabs;
+        //     balance = if total > 3 * i as i16 { -1 } else { 1 };
+
+        //     let n = self.gen_pool[i];
+        //     let y = n / self.mapw;
+        //     let x = n - y * self.mapw;
+        //     self.set_monster(x, y, lvlabs);
+        //     self.counts[lvlabs as usize] += 1;
+        // }
         println!("{}", total);
     }
 
-    pub fn set_monster(&mut self, x: usize, y: usize, n: i16) {
-        let old_n = self.monsters[y][x];
-        self.monsters[y][x] = n;
+    pub fn set_monster(&mut self, x: usize, y: usize, ent: Entity) {
+        let old = self.entities[y][x];
+        self.entities[y][x] = ent;
 
         for (xx, yy) in neighbors(x, y, self.mapw, self.maph) {
             // patch the difference for surrounding tile auras
-            self.auras[yy][xx] += n - old_n;
+            self.auras[yy][xx] += ent.level - old.level;
         }
     }
 
@@ -138,10 +150,10 @@ impl WorldMap {
 
     pub fn remine(&mut self, x: usize, y: usize) {
         for (xx, yy) in neighbors(x, y, self.mapw, self.maph) {
-            let mon = self.monsters[yy][xx];
-            self.set_monster(xx, yy, 0);
+            let mon = self.entities[yy][xx];
+            self.set_monster(xx, yy, entities::NONE);
 
-            if mon > 0 {
+            if mon.level > 0 {
                 // don't take new values that are also adjacent
                 while self.gen_i < self.gen_pool.len() {
                     let n = self.gen_pool[self.gen_i];
@@ -163,19 +175,24 @@ impl WorldMap {
         }
     }
 
+    pub fn hero(&self) -> Entity {
+        let (x, y) = self.hero_pos;
+        self.entities[y][x]
+    }
+
     pub fn end_game(&mut self) {
         self.game_over = true;
 
         for i in 0..self.maph {
             for j in 0..self.mapw {
-                if self.monsters[i][j] > 0 {
+                if self.entities[i][j].level > 0 {
                     self.open[i][j] = true;
                 }
             }
         }
     }
 
-    pub fn open_tile(&mut self, x: usize, y: usize, hero: &mut Char) -> bool {
+    pub fn open_tile(&mut self, x: usize, y: usize) -> bool {
         // clamp x y
         if x >= self.mapw || y >= self.maph {
             return false;
@@ -184,6 +201,8 @@ impl WorldMap {
         // move mines out of way for first click
         if self.first {
             self.remine(x, y);
+            self.hero_pos = (x, y);
+            self.entities[y][x] = entities::HERO;
         }
         self.first = false;
 
@@ -191,6 +210,8 @@ impl WorldMap {
 
         self.search_buffer[j] = (x, y);
         j += 1;
+
+        let mut opened = 0;
 
         while j > 0 {
             // shadow original tile vars
@@ -202,9 +223,10 @@ impl WorldMap {
             };
 
             self.open[y][x] = true;
+            opened += 1;
             self.flags[y][x] = 0;
 
-            hero.fight(self.monsters[y][x]);
+            // hero.fight(self.monsters[y][x]);
 
             if self.auras[y][x] > 0 {
                 continue;
@@ -224,11 +246,11 @@ impl WorldMap {
             }
         }
 
-        self.open[y][x]
+        opened > 0
     }
 
     // TODO: work through lowest level monsters first in case leveling in middle
-    pub fn chord_tile(&mut self, x: usize, y: usize, hero: &mut Char) {
+    pub fn chord_tile(&mut self, x: usize, y: usize) {
         // only chord open tiles
         if !self.open[y][x] {
             return;
@@ -245,7 +267,7 @@ impl WorldMap {
         for (xx, yy) in neighbors(x, y, self.mapw, self.maph) {
             // handle open tile cases
             if self.open[yy][xx] {
-                sum += self.monsters[yy][xx];
+                sum += self.entities[yy][xx].level;
             } else {
                 sum += self.flags[yy][xx];
             }
@@ -257,7 +279,25 @@ impl WorldMap {
                     continue;
                 }
 
-                self.open_tile(xx, yy, hero);
+                self.open_tile(xx, yy);
+            }
+        }
+    }
+
+    pub fn step(&mut self) {
+        // all monsters attack hero
+        // order by position?
+
+        for i in 0..self.maph {
+            for j in 0..self.mapw {
+                if !self.open[i][j] {
+                    continue;
+                }
+
+                let m = self.entities[i][j].level;
+                if m > 0 {
+                    self.entities[i][j].take_turn(self.hero_pos);
+                }
             }
         }
     }

@@ -1,14 +1,11 @@
-use char::Char;
-use char::Class;
 use macroquad::input;
 use macroquad::prelude::*;
 use macroquad::time;
 use macroquad::ui::hash;
 use macroquad::ui::root_ui;
-mod char;
-mod effects;
+mod effect;
+mod entities;
 mod mapgen;
-mod monster;
 mod worldmap;
 
 const Si: i16 = 16;
@@ -55,8 +52,6 @@ async fn main() {
     // ██║██║ ╚████║██║   ██║
     // ╚═╝╚═╝  ╚═══╝╚═╝   ╚═╝
     //
-    let mut hero = Char::new(Class::Hero);
-
     let init = |mapw: usize, maph: usize, mines: usize| {
         let mut genterrains = vec![vec![0f32; mapw]; maph];
         mapgen::genmap_fissure(&mut genterrains);
@@ -166,7 +161,9 @@ async fn main() {
                 if left_click {
                     // guard against accidental click
                     if world.flags[y][x] == 0 {
-                        world.open_tile(x, y, &mut hero);
+                        if world.open_tile(x, y) {
+                            world.step();
+                        }
                     }
                 }
                 // FLAG tile
@@ -209,13 +206,13 @@ async fn main() {
 
                 // CHORD tile
                 if mid_click {
-                    world.chord_tile(x, y, &mut hero);
+                    world.chord_tile(x, y);
                 }
             }
         }
 
         // if less than level 1, dead
-        if hero.level < 1 {
+        if world.hero().hp < 1 {
             world.end_game();
         }
 
@@ -228,7 +225,6 @@ async fn main() {
         // Restart
         let r_pressed = input::is_key_pressed(KeyCode::R);
         if r_pressed {
-            hero = Char::new(Class::Hero);
             world = init(mapw, maph, mines);
         }
 
@@ -272,7 +268,7 @@ async fn main() {
         //
         for i in 0..maph {
             for j in 0..mapw {
-                let t = world.monsters[i][j];
+                let t = world.entities[i][j].level;
                 let trow = t / 16;
                 let tmod = t - trow * 16;
 
@@ -304,7 +300,7 @@ async fn main() {
                 if t == 0 {
                     continue;
                 }
-                if world.monsters[i][j] > 0 {
+                if world.entities[i][j].level > 0 {
                     continue;
                 }
 
@@ -437,6 +433,14 @@ async fn main() {
                 },
             );
         }
+
+        draw_text(
+            &format!("HP: {}", world.hero().hp),
+            screen_width() / 2.,
+            20.,
+            36.,
+            Color::new(1., 1., 1., 1.),
+        );
 
         if world.game_over {
             let center = get_text_center("Game Over", Option::None, 48, 1.0, 0.);

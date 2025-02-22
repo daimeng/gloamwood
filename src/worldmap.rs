@@ -42,6 +42,36 @@ fn neighbors(x: usize, y: usize, w: usize, h: usize) -> impl Iterator<Item = (us
     })
 }
 
+// ███████╗██████╗  █████╗ ██╗    ██╗███╗   ██╗███████╗
+// ██╔════╝██╔══██╗██╔══██╗██║    ██║████╗  ██║██╔════╝
+// ███████╗██████╔╝███████║██║ █╗ ██║██╔██╗ ██║███████╗
+// ╚════██║██╔═══╝ ██╔══██║██║███╗██║██║╚██╗██║╚════██║
+// ███████║██║     ██║  ██║╚███╔███╔╝██║ ╚████║███████║
+// ╚══════╝╚═╝     ╚═╝  ╚═╝ ╚══╝╚══╝ ╚═╝  ╚═══╝╚══════╝
+//
+// 1 wolf
+// 2 boney
+// 3 saurian
+// 4 vampire
+// 5 dweomer
+// 6 banshee
+// 7 goyle
+// 8 lich
+// 9 dragon
+static SPAWNS: [Vec<usize>; 11] = [
+    vec![], //deep
+    vec![], //shallow
+    vec![], //swamp
+    vec![], //plain
+    vec![], //forest
+    vec![], //darkforest
+    vec![], //hill
+    vec![], //mountain
+    vec![], //clouds
+    vec![], //peak
+    vec![], //lava
+];
+
 impl WorldMap {
     pub fn new(mapw: usize, maph: usize) -> Self {
         Self {
@@ -70,41 +100,31 @@ impl WorldMap {
         self.gen_pool.shuffle_with_state(&rng);
         let mut total = 0;
 
+        // for i in 0..mines {
+        //     self.gen_i += 1;
+        //     total += 1 as i16;
+        //     let n = self.gen_pool[i];
+        //     let y = n / self.mapw;
+        //     let x = n - y * self.mapw;
+        //     self.set_monster(x, y, Entity::new(&entities::WOLF));
+        //     self.counts[1] += 1;
+        // }
+
+        let mut balance = 0;
         for i in 0..mines {
             self.gen_i += 1;
-            total += 1 as i16;
+            let lvl: i16 = (rng.gen_range(-9, 10) + rng.gen_range(-9, 10)) / 2;
+            let lvlabs = (lvl.abs() + balance).max(1).min(9);
+
+            total += lvlabs;
+            balance = if total > 3 * i as i16 { -1 } else { 1 };
+
             let n = self.gen_pool[i];
             let y = n / self.mapw;
             let x = n - y * self.mapw;
-            self.set_monster(x, y, Entity::new(&entities::WOLF));
-            self.counts[1] += 1;
+            self.set_monster(x, y, entities::MONSTERS[lvlabs as usize]);
+            self.counts[lvlabs as usize] += 1;
         }
-
-        // for i in 1..10 {
-        //     self.gen_i += 1;
-        //     total += i as i16;
-        //     let n = self.gen_pool[i];
-        //     let y = n / self.mapw;
-        //     let x = n - y * self.mapw;
-        //     self.set_monster(x, y, i as i16);
-        //     self.counts[i] += 1;
-        // }
-
-        // let mut balance = 0;
-        // for i in 9..mines {
-        //     self.gen_i += 1;
-        //     let lvl: i16 = (rng.gen_range(-9, 10) + rng.gen_range(-9, 10)) / 2;
-        //     let lvlabs = (lvl.abs() + balance).max(1).min(9);
-
-        //     total += lvlabs;
-        //     balance = if total > 3 * i as i16 { -1 } else { 1 };
-
-        //     let n = self.gen_pool[i];
-        //     let y = n / self.mapw;
-        //     let x = n - y * self.mapw;
-        //     self.set_monster(x, y, lvlabs);
-        //     self.counts[lvlabs as usize] += 1;
-        // }
         println!("{}", total);
     }
 

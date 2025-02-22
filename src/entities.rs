@@ -33,6 +33,79 @@ pub static WOLF: Entity = Entity {
     damage: 1,
 };
 
+pub static MONSTERS: [Entity; 10] = [
+    Entity {
+        proto: None,
+        breed: 0,
+        level: 0,
+        hp: 100,
+        damage: 1,
+    },
+    Entity {
+        proto: None,
+        breed: 1,
+        level: 1,
+        hp: 10,
+        damage: 1,
+    },
+    Entity {
+        proto: None,
+        breed: 2,
+        level: 2,
+        hp: 10,
+        damage: 1,
+    },
+    Entity {
+        proto: None,
+        breed: 3,
+        level: 3,
+        hp: 10,
+        damage: 1,
+    },
+    Entity {
+        proto: None,
+        breed: 4,
+        level: 4,
+        hp: 10,
+        damage: 1,
+    },
+    Entity {
+        proto: None,
+        breed: 5,
+        level: 5,
+        hp: 10,
+        damage: 1,
+    },
+    Entity {
+        proto: None,
+        breed: 6,
+        level: 6,
+        hp: 10,
+        damage: 1,
+    },
+    Entity {
+        proto: None,
+        breed: 7,
+        level: 7,
+        hp: 10,
+        damage: 1,
+    },
+    Entity {
+        proto: None,
+        breed: 8,
+        level: 8,
+        hp: 10,
+        damage: 1,
+    },
+    Entity {
+        proto: None,
+        breed: 9,
+        level: 9,
+        hp: 10,
+        damage: 1,
+    },
+];
+
 impl Entity {
     pub fn new(proto: &'static Entity) -> Self {
         Self {

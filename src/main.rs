@@ -161,7 +161,7 @@ async fn main() {
                 if left_click {
                     // guard against accidental click
                     if world.flags[y][x] == 0 {
-                        if world.open_tile(x, y) {
+                        if !world.open_tile(x, y) {
                             world.step();
                         }
                     }
@@ -268,6 +268,9 @@ async fn main() {
         //
         for i in 0..maph {
             for j in 0..mapw {
+                if world.entities[i][j].breed == -1 {
+                    continue;
+                }
                 let t = world.entities[i][j].level;
                 let trow = t / 16;
                 let tmod = t - trow * 16;

@@ -1,3 +1,5 @@
+use crate::worldmap::WorldMap;
+
 #[derive(Clone, Copy)]
 pub struct Entity {
     pub proto: Option<&'static Entity>,
@@ -41,6 +43,4 @@ impl Entity {
             damage: proto.damage,
         }
     }
-
-    pub fn take_turn(&self, hero_pos: (usize, usize)) {}
 }

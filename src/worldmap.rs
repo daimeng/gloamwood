@@ -175,9 +175,9 @@ impl WorldMap {
         }
     }
 
-    pub fn hero(&self) -> Entity {
+    pub fn hero(&self) -> &Entity {
         let (x, y) = self.hero_pos;
-        self.entities[y][x]
+        &self.entities[y][x]
     }
 
     pub fn end_game(&mut self) {
@@ -201,8 +201,8 @@ impl WorldMap {
         // move mines out of way for first click
         if self.first {
             self.remine(x, y);
+            self.set_monster(x, y, entities::HERO);
             self.hero_pos = (x, y);
-            self.entities[y][x] = entities::HERO;
         }
         self.first = false;
 
@@ -243,6 +243,15 @@ impl WorldMap {
 
                 self.search_buffer[j] = (xx, yy);
                 j += 1;
+            }
+        }
+
+        if opened == 0 {
+            // move hero if empty
+            if self.entities[y][x].breed == -1 {
+                self.set_monster(x, y, *self.hero());
+                self.set_monster(self.hero_pos.0, self.hero_pos.1, entities::NONE);
+                self.hero_pos = (x, y);
             }
         }
 
@@ -288,15 +297,58 @@ impl WorldMap {
         // all monsters attack hero
         // order by position?
 
+        let mut list = Vec::new();
         for i in 0..self.maph {
             for j in 0..self.mapw {
                 if !self.open[i][j] {
                     continue;
                 }
+                if self.entities[i][j].level > 0 {
+                    list.push((i, j));
+                }
+            }
+        }
 
-                let m = self.entities[i][j].level;
-                if m > 0 {
-                    self.entities[i][j].take_turn(self.hero_pos);
+        for (i, j) in list {
+            self.take_turn(j, i);
+        }
+    }
+
+    pub fn take_turn(&mut self, x: usize, y: usize) {
+        let ent = &self.entities[y][x];
+        let (herox, heroy) = self.hero_pos;
+        if x == herox && y == heroy {
+            return;
+        }
+
+        let hero = &self.entities[heroy][herox];
+
+        match ent.breed {
+            // player
+            0 => {}
+            // generic monster
+            _ => {
+                let dx = herox as i16 - x as i16;
+                let dy = heroy as i16 - y as i16;
+                let mut dist = dx * dx + dy * dy;
+                let mut nextpos = (x, y);
+
+                for (xx, yy) in neighbors(x, y, self.mapw, self.maph) {
+                    let dx = herox as i16 - xx as i16;
+                    let dy = heroy as i16 - yy as i16;
+                    let d = dx * dx + dy * dy;
+
+                    // if distance is closer and empty
+                    if d < dist && self.entities[yy][xx].breed == entities::NONE.breed {
+                        dist = d;
+                        nextpos = (xx, yy);
+                    }
+                }
+
+                // execute move
+                if nextpos.0 != x || nextpos.1 != y {
+                    self.set_monster(nextpos.0, nextpos.1, *ent);
+                    self.set_monster(x, y, entities::NONE);
                 }
             }
         }

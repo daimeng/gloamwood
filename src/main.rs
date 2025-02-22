@@ -311,7 +311,7 @@ async fn main() {
                     draw_text_ex(
                         &format!("{t}"),
                         S * 2. * j as f32 + 9.,
-                        S * 2. * i as f32 + 23. + 50.,
+                        S * 2. * i as f32 + 23. + 52.,
                         TextParams {
                             font: Some(&font),
                             font_size: 24,
@@ -323,7 +323,7 @@ async fn main() {
                     draw_text_ex(
                         &format!("{t}"),
                         S * 2. * j as f32 + 3.,
-                        S * 2. * i as f32 + 23. + 50.,
+                        S * 2. * i as f32 + 23. + 52.,
                         TextParams {
                             font: Some(&font),
                             font_size: 22,
@@ -358,27 +358,27 @@ async fn main() {
                         );
 
                         let terrain = world.terrains[i][j];
+                        draw_texture_ex(
+                            &tiles_tex,
+                            S * 2. * j as f32,
+                            S * 2. * i as f32 + 50.,
+                            WHITE,
+                            DrawTextureParams {
+                                dest_size: dest_size2,
+                                source: Some(Rect::new(0., S, S * 2., S * 2.)),
+                                ..Default::default()
+                            },
+                        );
+
                         if terrain == 9 {
                             draw_texture_ex(
                                 &tiles_tex,
                                 S * 2. * j as f32,
                                 S * 2. * i as f32 + 50.,
-                                Color::from_rgba(255, 255, 255, 100),
+                                Color::from_rgba(255, 255, 255, 50),
                                 DrawTextureParams {
                                     dest_size: dest_size2,
                                     source: Some(Rect::new(terrain as f32 * S, 0., S, S)),
-                                    ..Default::default()
-                                },
-                            );
-                        } else {
-                            draw_texture_ex(
-                                &tiles_tex,
-                                S * 2. * j as f32,
-                                S * 2. * i as f32 + 50.,
-                                WHITE,
-                                DrawTextureParams {
-                                    dest_size: dest_size2,
-                                    source: Some(Rect::new(0., S, S * 2., S * 2.)),
                                     ..Default::default()
                                 },
                             );

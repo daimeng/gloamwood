@@ -58,18 +58,31 @@ fn neighbors(x: usize, y: usize, w: usize, h: usize) -> impl Iterator<Item = (us
 // 7 goyle
 // 8 lich
 // 9 dragon
-static SPAWNS: [Vec<usize>; 11] = [
-    vec![], //deep
-    vec![], //shallow
-    vec![], //swamp
-    vec![], //plain
-    vec![], //forest
-    vec![], //darkforest
-    vec![], //hill
-    vec![], //mountain
-    vec![], //clouds
-    vec![], //peak
-    vec![], //lava
+
+// 0 deep
+// 1 shallow
+// 2 swamp
+// 3 plain
+// 4 forest
+// 5 darkforest
+// 6 hill
+// 7 mountain
+// 8 clouds
+// 9 peak
+// 10 lava
+
+static SPAWNS: [&[usize]; 11] = [
+    &[3, 4, 6, 9],             //deep
+    &[2, 3, 4, 6],             //shallow
+    &[1, 2, 3, 4, 6, 8],       //swamp
+    &[1, 2, 3, 6],             //plain
+    &[1, 2, 3, 4, 5, 6, 8],    //forest
+    &[1, 2, 3, 4, 5, 6, 8],    //darkforest
+    &[1, 2, 3, 4, 5, 6, 7],    //hill
+    &[1, 2, 4, 5, 6, 7, 8, 9], //mountain
+    &[1, 2, 4, 5, 6, 7, 8, 9], //clouds
+    &[1, 2, 4, 6, 7, 8, 9],    //peak
+    &[6, 7, 9],                //lava
 ];
 
 impl WorldMap {
@@ -113,17 +126,22 @@ impl WorldMap {
         let mut balance = 0;
         for i in 0..mines {
             self.gen_i += 1;
-            let lvl: i16 = (rng.gen_range(-9, 10) + rng.gen_range(-9, 10)) / 2;
-            let lvlabs = (lvl.abs() + balance).max(1).min(9);
-
-            total += lvlabs;
-            balance = if total > 3 * i as i16 { -1 } else { 1 };
-
             let n = self.gen_pool[i];
             let y = n / self.mapw;
             let x = n - y * self.mapw;
-            self.set_monster(x, y, entities::MONSTERS[lvlabs as usize]);
-            self.counts[lvlabs as usize] += 1;
+            let t = self.terrains[y][x];
+            let spawns = SPAWNS[t as usize];
+            let slen = spawns.len() as i16;
+
+            let lvl: i16 = (rng.gen_range(-slen, slen + 1) + rng.gen_range(-slen, slen + 1)) / 2;
+            let lvlabs = (lvl.abs() + balance).max(1).min(slen);
+            let spawn = spawns[(lvlabs - 1) as usize];
+
+            total += spawn;
+            balance = if total > 3 * i { -1 } else { 1 };
+
+            self.set_monster(x, y, entities::MONSTERS[spawn as usize]);
+            self.counts[spawn as usize] += 1;
         }
         println!("{}", total);
     }
@@ -341,8 +359,6 @@ impl WorldMap {
             return;
         }
 
-        let hero = &self.entities[heroy][herox];
-
         match ent.breed {
             // player
             0 => {}
@@ -369,6 +385,14 @@ impl WorldMap {
                 if nextpos.0 != x || nextpos.1 != y {
                     self.set_monster(nextpos.0, nextpos.1, *ent);
                     self.set_monster(x, y, entities::NONE);
+                }
+
+                // attack
+                if dist <= 2 {
+                    let ent = self.entities[nextpos.1][nextpos.0];
+
+                    let hero = &mut self.entities[heroy][herox];
+                    hero.hp -= ent.level;
                 }
             }
         }

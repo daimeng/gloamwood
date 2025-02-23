@@ -166,6 +166,12 @@ async fn main() {
                         }
                     }
                 }
+
+                // CHORD tile
+                if mid_click {
+                    world.chord_tile(x, y);
+                }
+
                 // FLAG tile
                 if right_click {
                     world.flag_tile_inc(x, y);
@@ -202,11 +208,6 @@ async fn main() {
                     world.flag_tile(x, y, 8);
                 } else if input::is_key_pressed(KeyCode::Key9) {
                     world.flag_tile(x, y, 9);
-                }
-
-                // CHORD tile
-                if mid_click {
-                    world.chord_tile(x, y);
                 }
             }
         }

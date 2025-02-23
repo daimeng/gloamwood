@@ -230,10 +230,10 @@ impl WorldMap {
         }
     }
 
-    pub fn open_tile(&mut self, x: usize, y: usize) -> bool {
+    fn open_tile_(&mut self, x: usize, y: usize) -> i32 {
         // clamp x y
         if x >= self.mapw || y >= self.maph {
-            return false;
+            return 0;
         }
 
         // move mines out of way for first click
@@ -284,6 +284,12 @@ impl WorldMap {
             }
         }
 
+        opened
+    }
+
+    pub fn open_tile(&mut self, x: usize, y: usize) -> bool {
+        let opened = self.open_tile_(x, y);
+
         if opened == 0 {
             // move hero if empty
             if self.entities[y][x].breed == -1 {
@@ -293,7 +299,7 @@ impl WorldMap {
             }
         }
 
-        opened > 0
+        return opened > 0;
     }
 
     // TODO: work through lowest level monsters first in case leveling in middle
@@ -326,7 +332,7 @@ impl WorldMap {
                     continue;
                 }
 
-                self.open_tile(xx, yy);
+                self.open_tile_(xx, yy);
             }
         }
     }

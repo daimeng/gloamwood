@@ -62,7 +62,7 @@ async fn main() {
             .map(|row| {
                 row.iter()
                     // .map(|c| (c.abs() * 90.).round() as i16)
-                    .map(|c| ((c.max(-0.06) + 0.06) * 60.).round() as i16)
+                    .map(|c| ((c.max(-0.06) + 0.06) * 60.).round().min(10.) as i16)
                     .collect()
             })
             .collect();

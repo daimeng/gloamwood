@@ -49,6 +49,8 @@ fn neighbors(x: usize, y: usize, w: usize, h: usize) -> impl Iterator<Item = (us
 // ███████║██║     ██║  ██║╚███╔███╔╝██║ ╚████║███████║
 // ╚══════╝╚═╝     ╚═╝  ╚═╝ ╚══╝╚══╝ ╚═╝  ╚═══╝╚══════╝
 //
+// -1 gloamling
+// 0 bat
 // 1 wolf
 // 2 boney
 // 3 saurian
@@ -72,6 +74,20 @@ fn neighbors(x: usize, y: usize, w: usize, h: usize) -> impl Iterator<Item = (us
 // 10 lava
 
 static SPAWNS: [&[usize]; 11] = [
+    &[3, 4, 6, 9],             //deep
+    &[2, 3, 4, 6, 9],          //shallow
+    &[1, 2, 3, 4, 6, 8],       //swamp
+    &[1, 2, 3, 6],             //plain
+    &[1, 2, 3, 4, 5, 6, 8],    //forest
+    &[1, 2, 3, 4, 5, 6, 8],    //darkforest
+    &[1, 2, 3, 4, 5, 6, 7],    //hill
+    &[1, 2, 4, 5, 6, 7, 8, 9], //mountain
+    &[1, 2, 4, 5, 6, 7, 8, 9], //clouds
+    &[1, 2, 4, 6, 7, 8, 9],    //peak
+    &[6, 7, 9],                //lava
+];
+
+static NO_FOLLOW: [&[usize]; 11] = [
     &[3, 4, 6, 9],             //deep
     &[2, 3, 4, 6],             //shallow
     &[1, 2, 3, 4, 6, 8],       //swamp
@@ -338,24 +354,73 @@ impl WorldMap {
     }
 
     pub fn step(&mut self) {
-        // all monsters attack hero
-        // order by position?
+        // spiral order, from hero out
+        let (x, y) = self.hero_pos;
 
-        let mut list = Vec::new();
-        for i in 0..self.maph {
-            for j in 0..self.mapw {
-                if !self.open[i][j] {
-                    continue;
-                }
-                if self.entities[i][j].level > 0 {
-                    list.push((i, j));
-                }
+        let mut top = y as i16;
+        let mut bot = y as i16;
+        let mut right = x as i16;
+        let mut left = x as i16;
+
+        let mut sidelen = 0;
+        let rings = x.max(self.mapw - x).max(y).max(self.maph - y);
+        for _ in 0..rings {
+            for j in 0..sidelen {
+                self.take_turn_i16(right - j, bot);
             }
+
+            for i in 0..sidelen {
+                self.take_turn_i16(left, bot - i);
+            }
+
+            for j in 0..sidelen {
+                self.take_turn_i16(left + j, top);
+            }
+
+            for i in 0..sidelen {
+                self.take_turn_i16(right, top + i);
+            }
+
+            top -= 1;
+            left -= 1;
+            right += 1;
+            bot += 1;
+            sidelen += 2;
         }
 
-        for (i, j) in list {
-            self.take_turn(j, i);
+        // let mut list = Vec::new();
+        // for i in 0..self.maph {
+        //     for j in 0..self.mapw {
+        //         if !self.open[i][j] {
+        //             continue;
+        //         }
+        //         if self.entities[i][j].level > 0 {
+        //             list.push((i, j));
+        //         }
+        //     }
+        // }
+
+        // for (i, j) in list {
+        //     self.take_turn(j, i);
+        // }
+    }
+
+    #[inline(always)]
+    fn take_turn_i16(&mut self, x: i16, y: i16) {
+        let xu = x as usize;
+        let yu = y as usize;
+
+        if x < 0 || y < 0 || xu >= self.mapw || yu >= self.maph {
+            return;
         }
+        if !self.open[yu][xu] {
+            return;
+        }
+        if self.entities[yu][xu].level < 1 {
+            return;
+        }
+
+        return self.take_turn(xu, yu);
     }
 
     pub fn take_turn(&mut self, x: usize, y: usize) {
@@ -393,7 +458,7 @@ impl WorldMap {
                     self.set_monster(x, y, entities::NONE);
                 }
 
-                // attack
+                // monsters attack
                 if dist <= 2 {
                     let ent = self.entities[nextpos.1][nextpos.0];
 

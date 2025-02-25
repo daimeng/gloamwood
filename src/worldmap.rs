@@ -277,6 +277,7 @@ impl WorldMap {
             };
 
             self.open[y][x] = true;
+            self.entities[y][x].active = true;
             opened += 1;
             self.flags[y][x] = 0;
 
@@ -413,9 +414,12 @@ impl WorldMap {
         if x < 0 || y < 0 || xu >= self.mapw || yu >= self.maph {
             return;
         }
-        if !self.open[yu][xu] {
+        if !self.entities[yu][xu].active {
             return;
         }
+        // if !self.open[yu][xu] {
+        //     return;
+        // }
         if self.entities[yu][xu].level < 1 {
             return;
         }

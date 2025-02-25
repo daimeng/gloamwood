@@ -7,6 +7,7 @@ pub struct Entity {
     pub level: i16,
     pub hp: i16,
     pub damage: i16,
+    pub active: bool,
 }
 
 pub static NONE: Entity = Entity {
@@ -15,6 +16,7 @@ pub static NONE: Entity = Entity {
     level: 0,
     hp: 999,
     damage: 0,
+    active: false,
 };
 
 pub static HERO: Entity = Entity {
@@ -23,6 +25,7 @@ pub static HERO: Entity = Entity {
     level: 0,
     hp: 100,
     damage: 1,
+    active: true,
 };
 
 pub static WOLF: Entity = Entity {
@@ -31,6 +34,7 @@ pub static WOLF: Entity = Entity {
     level: 1,
     hp: 10,
     damage: 1,
+    active: false,
 };
 
 pub static MONSTERS: [Entity; 10] = [
@@ -40,6 +44,7 @@ pub static MONSTERS: [Entity; 10] = [
         level: 0,
         hp: 100,
         damage: 1,
+        active: false,
     },
     Entity {
         proto: None,
@@ -47,6 +52,7 @@ pub static MONSTERS: [Entity; 10] = [
         level: 1,
         hp: 10,
         damage: 1,
+        active: false,
     },
     Entity {
         proto: None,
@@ -54,6 +60,7 @@ pub static MONSTERS: [Entity; 10] = [
         level: 2,
         hp: 10,
         damage: 1,
+        active: false,
     },
     Entity {
         proto: None,
@@ -61,6 +68,7 @@ pub static MONSTERS: [Entity; 10] = [
         level: 3,
         hp: 10,
         damage: 1,
+        active: false,
     },
     Entity {
         proto: None,
@@ -68,6 +76,7 @@ pub static MONSTERS: [Entity; 10] = [
         level: 4,
         hp: 10,
         damage: 1,
+        active: false,
     },
     Entity {
         proto: None,
@@ -75,6 +84,7 @@ pub static MONSTERS: [Entity; 10] = [
         level: 5,
         hp: 10,
         damage: 1,
+        active: false,
     },
     Entity {
         proto: None,
@@ -82,6 +92,7 @@ pub static MONSTERS: [Entity; 10] = [
         level: 6,
         hp: 10,
         damage: 1,
+        active: false,
     },
     Entity {
         proto: None,
@@ -89,6 +100,7 @@ pub static MONSTERS: [Entity; 10] = [
         level: 7,
         hp: 10,
         damage: 1,
+        active: false,
     },
     Entity {
         proto: None,
@@ -96,6 +108,7 @@ pub static MONSTERS: [Entity; 10] = [
         level: 8,
         hp: 10,
         damage: 1,
+        active: false,
     },
     Entity {
         proto: None,
@@ -103,6 +116,7 @@ pub static MONSTERS: [Entity; 10] = [
         level: 9,
         hp: 10,
         damage: 1,
+        active: false,
     },
 ];
 
@@ -114,6 +128,7 @@ impl Entity {
             level: proto.level,
             hp: proto.hp,
             damage: proto.damage,
+            active: proto.active,
         }
     }
 }

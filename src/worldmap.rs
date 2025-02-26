@@ -327,6 +327,10 @@ impl WorldMap {
             // hero.fight(self.monsters[y][x]);
 
             if self.auras[y][x] > 0 {
+                for (xx, yy) in neighbors(x, y, self.mapw, self.maph) {
+                    self.show_terrain[yy][xx] = true;
+                }
+
                 continue;
             }
 

@@ -3,6 +3,7 @@ use macroquad::prelude::*;
 use macroquad::time;
 use macroquad::ui::hash;
 use macroquad::ui::root_ui;
+use worldmap::neighbors;
 mod effect;
 mod entities;
 mod mapgen;
@@ -13,6 +14,9 @@ const S: f32 = Si as f32;
 
 const BG_COLOR: Color = color_u8!(25, 25, 37, 255);
 const TERRAIN_TINT: Color = color_u8!(255, 255, 255, 220);
+
+const FOUR_SIDES: [(i16, i16); 4] = [(0, -1), (1, 0), (0, 1), (-1, 0)];
+const FOG_LINE: f32 = 1.;
 
 #[macroquad::main("Gloamwood")]
 async fn main() {
@@ -377,13 +381,57 @@ async fn main() {
                                 &tiles_tex,
                                 S * 2. * j as f32,
                                 S * 2. * i as f32 + 50.,
-                                Color::from_rgba(255, 255, 255, 50),
+                                Color::from_rgba(255, 255, 255, 80),
                                 DrawTextureParams {
                                     dest_size: dest_size2,
                                     source: Some(Rect::new(terrain as f32 * S, 0., S, S)),
                                     ..Default::default()
                                 },
                             );
+                        }
+
+                        if i > 0 && world.open[i - 1][j] {
+                            draw_line(
+                                S * 2. * (j as i16) as f32,
+                                S * 2. * (i as i16) as f32 + 50.,
+                                S * 2. * (j as i16 + 1) as f32,
+                                S * 2. * (i as i16) as f32 + 50.,
+                                FOG_LINE,
+                                WHITE,
+                            )
+                        }
+
+                        if i < world.maph - 1 && world.open[i + 1][j] {
+                            draw_line(
+                                S * 2. * (j as i16) as f32,
+                                S * 2. * (i as i16 + 1) as f32 + 50.,
+                                S * 2. * (j as i16 + 1) as f32,
+                                S * 2. * (i as i16 + 1) as f32 + 50.,
+                                FOG_LINE,
+                                WHITE,
+                            )
+                        }
+
+                        if j < world.mapw - 1 && world.open[i][j + 1] {
+                            draw_line(
+                                S * 2. * (j as i16 + 1) as f32,
+                                S * 2. * (i as i16) as f32 + 50.,
+                                S * 2. * (j as i16 + 1) as f32,
+                                S * 2. * (i as i16 + 1) as f32 + 50.,
+                                FOG_LINE,
+                                WHITE,
+                            )
+                        }
+
+                        if j > 0 && world.open[i][j - 1] {
+                            draw_line(
+                                S * 2. * (j as i16) as f32,
+                                S * 2. * (i as i16) as f32 + 50.,
+                                S * 2. * (j as i16) as f32,
+                                S * 2. * (i as i16 + 1) as f32 + 50.,
+                                FOG_LINE,
+                                WHITE,
+                            )
                         }
                     }
                 }

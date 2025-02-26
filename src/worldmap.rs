@@ -350,7 +350,6 @@ impl WorldMap {
         return opened > 0;
     }
 
-    // TODO: work through lowest level monsters first in case leveling in middle
     pub fn chord_tile(&mut self, x: usize, y: usize) {
         // only chord open tiles
         if !self.open[y][x] {
@@ -425,22 +424,6 @@ impl WorldMap {
         }
 
         self.take_bonus_action(x, y);
-
-        // let mut list = Vec::new();
-        // for i in 0..self.maph {
-        //     for j in 0..self.mapw {
-        //         if !self.open[i][j] {
-        //             continue;
-        //         }
-        //         if self.entities[i][j].level > 0 {
-        //             list.push((i, j));
-        //         }
-        //     }
-        // }
-
-        // for (i, j) in list {
-        //     self.take_turn(j, i);
-        // }
     }
 
     #[inline(always)]

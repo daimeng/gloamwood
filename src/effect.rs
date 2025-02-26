@@ -3,6 +3,20 @@ use crate::{
     worldmap::{neighbors, WorldMap},
 };
 
+#[derive(Clone, Copy, Debug)]
+pub enum GameEffect {
+    Dagger,
+    Sword,
+}
+
+impl Effect for GameEffect {
+    fn on_move(&mut self, world: &mut WorldMap, x: usize, y: usize) {
+        match self {
+            _ => {}
+        }
+    }
+}
+
 #[derive(Clone, Copy)]
 pub struct BaseEffect {}
 

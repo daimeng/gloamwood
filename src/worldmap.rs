@@ -3,8 +3,11 @@ use macroquad::{
     rand::{ChooseRandom, RandGenerator},
 };
 
-use crate::{effect, entities};
 use crate::{effect::Effect, entities::Entity};
+use crate::{
+    effect::{self, GameEffect},
+    entities,
+};
 
 pub struct WorldMap {
     pub mapw: usize,
@@ -89,17 +92,17 @@ static SPAWNS: [&[usize]; 11] = [
 ];
 
 static NO_FOLLOW: [&[usize]; 11] = [
-    &[3, 4, 6, 9],             //deep
-    &[2, 3, 4, 6],             //shallow
-    &[1, 2, 3, 4, 6, 8],       //swamp
-    &[1, 2, 3, 6],             //plain
-    &[1, 2, 3, 4, 5, 6, 8],    //forest
-    &[1, 2, 3, 4, 5, 6, 8],    //darkforest
-    &[1, 2, 3, 4, 5, 6, 7],    //hill
-    &[1, 2, 4, 5, 6, 7, 8, 9], //mountain
-    &[1, 2, 4, 5, 6, 7, 8, 9], //clouds
-    &[1, 2, 4, 6, 7, 8, 9],    //peak
-    &[6, 7, 9],                //lava
+    &[], //deep
+    &[], //shallow
+    &[], //swamp
+    &[], //plain
+    &[], //forest
+    &[], //darkforest
+    &[], //hill
+    &[], //mountain
+    &[], //clouds
+    &[], //peak
+    &[], //lava
 ];
 
 impl WorldMap {
@@ -107,6 +110,7 @@ impl WorldMap {
         let mut entity_store = Vec::with_capacity(mapw * maph);
         entity_store.push(entities::NONE);
         entity_store.push(entities::MONSTERS[0]); // hero
+        entity_store[1].effects[0] = Some(GameEffect::Dagger);
 
         Self {
             mapw,
@@ -457,23 +461,7 @@ impl WorldMap {
 
         match ent.breed {
             // player
-            0 => {
-                for (xx, yy) in neighbors(x, y, self.mapw, self.maph) {
-                    // check if open
-                    if !self.open[yy][xx] {
-                        continue;
-                    }
-
-                    // melee
-                    let target_id = self.entities[yy][xx];
-                    if self.entity_store[target_id].breed > 0 {
-                        self.entity_store[target_id].hp -= ent.damage;
-                        if self.entity_store[target_id].hp < 1 {
-                            self.set_monster(xx, yy, 0);
-                        }
-                    }
-                }
-            }
+            0 => {}
             // generic monster
             _ => {
                 let dx = herox as i16 - x as i16;
@@ -507,6 +495,31 @@ impl WorldMap {
 
                     self.entity_store[hero].hp -= ent.level;
                 }
+            }
+        }
+
+        for effect in self.entity_store[eid].effects {
+            match effect {
+                Some(GameEffect::Dagger) => {
+                    println!("{:?}", ent);
+                    for (xx, yy) in neighbors(x, y, self.mapw, self.maph) {
+                        // check if open
+                        if !self.open[yy][xx] {
+                            continue;
+                        }
+
+                        // melee
+                        let tid = self.entities[yy][xx];
+                        let target = &mut self.entity_store[tid];
+                        if target.breed > 0 {
+                            target.hp -= ent.damage;
+                            if target.hp < 1 {
+                                self.set_monster(xx, yy, 0);
+                            }
+                        }
+                    }
+                }
+                _ => {}
             }
         }
     }

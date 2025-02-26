@@ -1,7 +1,4 @@
-use crate::{
-    effect::{BaseEffect, Effect, GameEffect},
-    worldmap::WorldMap,
-};
+use crate::{effect::GameEffect, worldmap::WorldMap};
 
 #[derive(Clone, Copy, Debug)]
 pub struct Entity {

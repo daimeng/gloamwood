@@ -3,7 +3,7 @@ use macroquad::{
     rand::{ChooseRandom, RandGenerator},
 };
 
-use crate::{effect::Effect, entities::Entity};
+use crate::entities::Entity;
 use crate::{
     effect::{self, GameEffect},
     entities,
@@ -18,7 +18,7 @@ pub struct WorldMap {
     pub open: Vec<Vec<bool>>,
     pub flags: Vec<Vec<i16>>,
     pub game_over: bool,
-    pub effects: Vec<effect::BaseEffect>,
+    pub effects: Vec<effect::GameEffect>,
     pub hero_pos: (usize, usize),
     pub entity_store: Vec<Entity>,
     pub effects_store: Vec<[Option<GameEffect>; 4]>,
@@ -424,7 +424,7 @@ impl WorldMap {
             sidelen += 2;
         }
 
-        // perform slow attacks
+        self.take_bonus_action(x, y);
 
         // let mut list = Vec::new();
         // for i in 0..self.maph {
@@ -504,6 +504,7 @@ impl WorldMap {
         for effect in self.effects_store[eid] {
             match effect {
                 Some(GameEffect::Dagger(dmg)) => {
+                    // reservoir sample to choose target?
                     for (xx, yy) in neighbors(x, y, self.mapw, self.maph) {
                         // check if open
                         if !self.open[yy][xx] {
@@ -518,6 +519,7 @@ impl WorldMap {
                             if target.hp < 1 {
                                 self.set_monster(xx, yy, 0);
                             }
+                            break;
                         }
                     }
                 }
@@ -537,6 +539,34 @@ impl WorldMap {
                     // monsters attack
                     if dist <= 9 {
                         self.entity_store[hero].hp -= dmg;
+                    }
+                }
+                _ => {}
+            }
+        }
+    }
+
+    pub fn take_bonus_action(&mut self, x: usize, y: usize) {
+        let eid = self.entities[y][x];
+
+        for effect in self.effects_store[eid] {
+            match effect {
+                Some(GameEffect::Sword(dmg)) => {
+                    for (xx, yy) in neighbors(x, y, self.mapw, self.maph) {
+                        // check if open
+                        if !self.open[yy][xx] {
+                            continue;
+                        }
+
+                        // melee
+                        let tid = self.entities[yy][xx];
+                        let target = &mut self.entity_store[tid];
+                        if target.breed > 0 {
+                            target.hp -= dmg;
+                            if target.hp < 1 {
+                                self.set_monster(xx, yy, 0);
+                            }
+                        }
                     }
                 }
                 _ => {}

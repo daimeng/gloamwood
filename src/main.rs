@@ -270,10 +270,10 @@ async fn main() {
         //
         for i in 0..maph {
             for j in 0..mapw {
-                if world.entities[i][j].breed == -1 {
+                if world.entity(j, i).breed == -1 {
                     continue;
                 }
-                let t = world.entities[i][j].level;
+                let t = world.entity(j, i).level;
                 let trow = t / 16;
                 let tmod = t - trow * 16;
 
@@ -305,7 +305,7 @@ async fn main() {
                 if t == 0 {
                     continue;
                 }
-                if world.entities[i][j].level > 0 {
+                if world.entity(j, i).level > 0 {
                     continue;
                 }
 

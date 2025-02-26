@@ -1,4 +1,4 @@
-use crate::worldmap::WorldMap;
+use crate::{effect::Effect, worldmap::WorldMap};
 
 #[derive(Clone, Copy, Debug)]
 pub struct Entity {
@@ -19,31 +19,13 @@ pub static NONE: Entity = Entity {
     active: false,
 };
 
-pub static HERO: Entity = Entity {
-    proto: None,
-    breed: 0,
-    level: 0,
-    hp: 100,
-    damage: 2,
-    active: true,
-};
-
-pub static WOLF: Entity = Entity {
-    proto: None,
-    breed: 1,
-    level: 1,
-    hp: 10,
-    damage: 1,
-    active: false,
-};
-
 pub static MONSTERS: [Entity; 10] = [
     Entity {
         proto: None,
         breed: 0,
         level: 0,
         hp: 100,
-        damage: 1,
+        damage: 2,
         active: false,
     },
     Entity {

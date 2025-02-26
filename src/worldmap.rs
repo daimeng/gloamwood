@@ -7,16 +7,17 @@ use crate::{effect, entities};
 use crate::{effect::Effect, entities::Entity};
 
 pub struct WorldMap {
-    mapw: usize,
-    maph: usize,
+    pub mapw: usize,
+    pub maph: usize,
     pub terrains: Vec<Vec<i16>>,
-    pub entities: Vec<Vec<Entity>>,
+    pub entities: Vec<Vec<usize>>,
     pub auras: Vec<Vec<i16>>,
     pub open: Vec<Vec<bool>>,
     pub flags: Vec<Vec<i16>>,
     pub game_over: bool,
-    pub effects: Vec<Effect>,
+    pub effects: Vec<effect::BaseEffect>,
     pub hero_pos: (usize, usize),
+    pub entity_store: Vec<Entity>,
     search_buffer: Vec<(usize, usize)>,
     gen_pool: Vec<usize>,
     gen_i: usize,
@@ -24,7 +25,7 @@ pub struct WorldMap {
     pub counts: [i16; 10],
 }
 
-fn neighbors(x: usize, y: usize, w: usize, h: usize) -> impl Iterator<Item = (usize, usize)> {
+pub fn neighbors(x: usize, y: usize, w: usize, h: usize) -> impl Iterator<Item = (usize, usize)> {
     (0..3).flat_map(move |dy| {
         let yy = y + dy;
         (0..3).filter_map(move |dx| {
@@ -103,15 +104,20 @@ static NO_FOLLOW: [&[usize]; 11] = [
 
 impl WorldMap {
     pub fn new(mapw: usize, maph: usize) -> Self {
+        let mut entity_store = Vec::with_capacity(mapw * maph);
+        entity_store.push(entities::NONE);
+        entity_store.push(entities::MONSTERS[0]); // hero
+
         Self {
             mapw,
             maph,
             terrains: vec![vec![0; mapw]; maph],
-            entities: vec![vec![entities::NONE; mapw]; maph],
+            entities: vec![vec![0; mapw]; maph],
             auras: vec![vec![0; mapw]; maph],
             open: vec![vec![false; mapw]; maph],
             flags: vec![vec![0; mapw]; maph],
-            effects: vec![effect::NONE; maph * mapw],
+            effects: vec![],
+            entity_store,
             hero_pos: (0, 0),
             game_over: false,
             search_buffer: vec![(0, 0); maph * mapw],
@@ -156,19 +162,21 @@ impl WorldMap {
             total += spawn;
             balance = if total > 3 * i { -1 } else { 1 };
 
-            self.set_monster(x, y, entities::MONSTERS[spawn as usize]);
+            let next_id = self.entity_store.len();
+            self.entity_store.push(entities::MONSTERS[spawn as usize]);
+            self.set_monster(x, y, next_id);
             self.counts[spawn as usize] += 1;
         }
         println!("{}", total);
     }
 
-    pub fn set_monster(&mut self, x: usize, y: usize, ent: Entity) {
-        let old = self.entities[y][x];
-        self.entities[y][x] = ent;
+    pub fn set_monster(&mut self, x: usize, y: usize, eid: usize) {
+        let old_idx = self.entities[y][x];
+        self.entities[y][x] = eid;
 
         for (xx, yy) in neighbors(x, y, self.mapw, self.maph) {
             // patch the difference for surrounding tile auras
-            self.auras[yy][xx] += ent.level - old.level;
+            self.auras[yy][xx] += self.entity_store[eid].level - self.entity_store[old_idx].level;
         }
     }
 
@@ -204,8 +212,9 @@ impl WorldMap {
 
     pub fn remine(&mut self, x: usize, y: usize) {
         for (xx, yy) in neighbors(x, y, self.mapw, self.maph) {
-            let mon = self.entities[yy][xx];
-            self.set_monster(xx, yy, entities::NONE);
+            let monidx = self.entities[yy][xx];
+            self.set_monster(xx, yy, 0);
+            let mon = self.entity_store[monidx];
 
             if mon.level > 0 {
                 // don't take new values that are also adjacent
@@ -222,16 +231,23 @@ impl WorldMap {
                         continue;
                     }
 
-                    self.set_monster(j, i, mon);
+                    self.set_monster(j, i, monidx);
                     break;
                 }
             }
         }
     }
 
+    #[inline(always)]
     pub fn hero(&self) -> &Entity {
         let (x, y) = self.hero_pos;
-        &self.entities[y][x]
+        self.entity(x, y)
+    }
+
+    #[inline(always)]
+    pub fn entity(&self, x: usize, y: usize) -> &Entity {
+        let idx = self.entities[y][x];
+        &self.entity_store[idx]
     }
 
     pub fn end_game(&mut self) {
@@ -239,7 +255,8 @@ impl WorldMap {
 
         for i in 0..self.maph {
             for j in 0..self.mapw {
-                if self.entities[i][j].level > 0 {
+                let idx = self.entities[i][j];
+                if self.entity_store[idx].level > 0 {
                     self.open[i][j] = true;
                 }
             }
@@ -255,7 +272,7 @@ impl WorldMap {
         // move mines out of way for first click
         if self.first {
             self.remine(x, y);
-            self.set_monster(x, y, entities::HERO);
+            self.set_monster(x, y, 1);
             self.hero_pos = (x, y);
         }
         self.first = false;
@@ -277,7 +294,8 @@ impl WorldMap {
             };
 
             self.open[y][x] = true;
-            self.entities[y][x].active = true;
+            let eid = self.entities[y][x];
+            self.entity_store[eid].active = true;
             opened += 1;
             self.flags[y][x] = 0;
 
@@ -309,9 +327,10 @@ impl WorldMap {
 
         if opened == 0 {
             // move hero if empty
-            if self.entities[y][x].breed == -1 {
-                self.set_monster(x, y, *self.hero());
-                self.set_monster(self.hero_pos.0, self.hero_pos.1, entities::NONE);
+            let eid = self.entities[y][x];
+            if self.entity_store[eid].breed == -1 {
+                self.set_monster(x, y, 1);
+                self.set_monster(self.hero_pos.0, self.hero_pos.1, 0);
                 self.hero_pos = (x, y);
             }
         }
@@ -336,8 +355,9 @@ impl WorldMap {
         let mut sum = 0;
         for (xx, yy) in neighbors(x, y, self.mapw, self.maph) {
             // handle open tile cases
+            let eid = self.entities[yy][xx];
             if self.open[yy][xx] {
-                sum += self.entities[yy][xx].level;
+                sum += self.entity_store[eid].level;
             } else {
                 sum += self.flags[yy][xx];
             }
@@ -419,10 +439,11 @@ impl WorldMap {
         if x < 0 || y < 0 || xu >= self.mapw || yu >= self.maph {
             return;
         }
-        if !self.entities[yu][xu].active {
+        let eid = self.entities[yu][xu];
+        if !self.entity_store[eid].active {
             return;
         }
-        if self.entities[yu][xu].level < 1 {
+        if self.entity_store[eid].level < 1 {
             return;
         }
 
@@ -430,7 +451,8 @@ impl WorldMap {
     }
 
     pub fn take_turn(&mut self, x: usize, y: usize) {
-        let ent = self.entities[y][x];
+        let eid = self.entities[y][x];
+        let ent = self.entity_store[eid];
         let (herox, heroy) = self.hero_pos;
 
         match ent.breed {
@@ -443,10 +465,11 @@ impl WorldMap {
                     }
 
                     // melee
-                    if self.entities[yy][xx].breed > 0 {
-                        self.entities[yy][xx].hp -= ent.damage;
-                        if self.entities[yy][xx].hp < 1 {
-                            self.set_monster(xx, yy, entities::NONE);
+                    let target_id = self.entities[yy][xx];
+                    if self.entity_store[target_id].breed > 0 {
+                        self.entity_store[target_id].hp -= ent.damage;
+                        if self.entity_store[target_id].hp < 1 {
+                            self.set_monster(xx, yy, 0);
                         }
                     }
                 }
@@ -463,8 +486,10 @@ impl WorldMap {
                     let dy = heroy as i16 - yy as i16;
                     let d = dx * dx + dy * dy;
 
+                    let target_id = self.entities[yy][xx];
+
                     // if distance is closer and empty
-                    if d < dist && self.entities[yy][xx].breed == entities::NONE.breed {
+                    if d < dist && self.entity_store[target_id].breed == entities::NONE.breed {
                         dist = d;
                         nextpos = (xx, yy);
                     }
@@ -472,16 +497,15 @@ impl WorldMap {
 
                 // execute move
                 if nextpos.0 != x || nextpos.1 != y {
-                    self.set_monster(nextpos.0, nextpos.1, ent);
-                    self.set_monster(x, y, entities::NONE);
+                    self.set_monster(nextpos.0, nextpos.1, eid);
+                    self.set_monster(x, y, 0);
                 }
 
                 // monsters attack
                 if dist <= 2 {
-                    let ent = self.entities[nextpos.1][nextpos.0];
+                    let hero = self.entities[heroy][herox];
 
-                    let hero = &mut self.entities[heroy][herox];
-                    hero.hp -= ent.level;
+                    self.entity_store[hero].hp -= ent.level;
                 }
             }
         }

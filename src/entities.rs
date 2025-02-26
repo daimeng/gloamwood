@@ -11,7 +11,6 @@ pub struct Entity {
     pub hp: i16,
     pub damage: i16,
     pub active: bool,
-    pub effects: [Option<GameEffect>; 4],
 }
 
 pub static NONE: Entity = Entity {
@@ -21,7 +20,6 @@ pub static NONE: Entity = Entity {
     hp: 999,
     damage: 0,
     active: false,
-    effects: [None, None, None, None],
 };
 
 pub static MONSTERS: [Entity; 10] = [
@@ -32,7 +30,6 @@ pub static MONSTERS: [Entity; 10] = [
         hp: 100,
         damage: 2,
         active: false,
-        effects: [None, None, None, None],
     },
     Entity {
         proto: None,
@@ -41,7 +38,6 @@ pub static MONSTERS: [Entity; 10] = [
         hp: 1,
         damage: 1,
         active: false,
-        effects: [None, None, None, None],
     },
     Entity {
         proto: None,
@@ -50,7 +46,6 @@ pub static MONSTERS: [Entity; 10] = [
         hp: 2,
         damage: 1,
         active: false,
-        effects: [None, None, None, None],
     },
     Entity {
         proto: None,
@@ -59,7 +54,6 @@ pub static MONSTERS: [Entity; 10] = [
         hp: 3,
         damage: 1,
         active: false,
-        effects: [None, None, None, None],
     },
     Entity {
         proto: None,
@@ -68,7 +62,6 @@ pub static MONSTERS: [Entity; 10] = [
         hp: 4,
         damage: 1,
         active: false,
-        effects: [None, None, None, None],
     },
     Entity {
         proto: None,
@@ -77,7 +70,6 @@ pub static MONSTERS: [Entity; 10] = [
         hp: 5,
         damage: 1,
         active: false,
-        effects: [None, None, None, None],
     },
     Entity {
         proto: None,
@@ -86,7 +78,6 @@ pub static MONSTERS: [Entity; 10] = [
         hp: 6,
         damage: 1,
         active: false,
-        effects: [None, None, None, None],
     },
     Entity {
         proto: None,
@@ -95,7 +86,6 @@ pub static MONSTERS: [Entity; 10] = [
         hp: 7,
         damage: 1,
         active: false,
-        effects: [None, None, None, None],
     },
     Entity {
         proto: None,
@@ -104,7 +94,6 @@ pub static MONSTERS: [Entity; 10] = [
         hp: 8,
         damage: 1,
         active: false,
-        effects: [None, None, None, None],
     },
     Entity {
         proto: None,
@@ -113,7 +102,6 @@ pub static MONSTERS: [Entity; 10] = [
         hp: 9,
         damage: 1,
         active: false,
-        effects: [None, None, None, None],
     },
 ];
 
@@ -126,7 +114,6 @@ impl Entity {
             hp: proto.hp,
             damage: proto.damage,
             active: proto.active,
-            effects: [None, None, None, None],
         }
     }
 }

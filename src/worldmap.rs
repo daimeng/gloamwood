@@ -21,6 +21,7 @@ pub struct WorldMap {
     pub effects: Vec<effect::BaseEffect>,
     pub hero_pos: (usize, usize),
     pub entity_store: Vec<Entity>,
+    pub effects_store: Vec<[Option<GameEffect>; 4]>,
     search_buffer: Vec<(usize, usize)>,
     gen_pool: Vec<usize>,
     gen_i: usize,
@@ -108,9 +109,14 @@ static NO_FOLLOW: [&[usize]; 11] = [
 impl WorldMap {
     pub fn new(mapw: usize, maph: usize) -> Self {
         let mut entity_store = Vec::with_capacity(mapw * maph);
+        let mut effects_store: Vec<[Option<GameEffect>; 4]> = Vec::with_capacity(mapw * maph);
+
         entity_store.push(entities::NONE);
+        effects_store.push([None, None, None, None]);
+
         entity_store.push(entities::MONSTERS[0]); // hero
-        entity_store[1].effects[0] = Some(GameEffect::Dagger);
+        effects_store.push([None, None, None, None]);
+        effects_store[1][0] = Some(GameEffect::Dagger);
 
         Self {
             mapw,
@@ -122,6 +128,7 @@ impl WorldMap {
             flags: vec![vec![0; mapw]; maph],
             effects: vec![],
             entity_store,
+            effects_store,
             hero_pos: (0, 0),
             game_over: false,
             search_buffer: vec![(0, 0); maph * mapw],
@@ -168,6 +175,7 @@ impl WorldMap {
 
             let next_id = self.entity_store.len();
             self.entity_store.push(entities::MONSTERS[spawn as usize]);
+            self.effects_store.push([None, None, None, None]);
             self.set_monster(x, y, next_id);
             self.counts[spawn as usize] += 1;
         }
@@ -498,10 +506,9 @@ impl WorldMap {
             }
         }
 
-        for effect in self.entity_store[eid].effects {
+        for effect in self.effects_store[eid] {
             match effect {
                 Some(GameEffect::Dagger) => {
-                    println!("{:?}", ent);
                     for (xx, yy) in neighbors(x, y, self.mapw, self.maph) {
                         // check if open
                         if !self.open[yy][xx] {

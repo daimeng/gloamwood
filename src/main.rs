@@ -68,7 +68,7 @@ async fn main() {
             .collect();
 
         let mut w = worldmap::WorldMap::new(mapw, maph);
-        w.terrains = terrains;
+        w.set_terrain(terrains);
         w.init(mines);
         w
     };
@@ -372,7 +372,7 @@ async fn main() {
                             },
                         );
 
-                        if terrain == 9 {
+                        if world.show_terrain[i][j] {
                             draw_texture_ex(
                                 &tiles_tex,
                                 S * 2. * j as f32,

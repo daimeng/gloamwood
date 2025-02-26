@@ -1,3 +1,5 @@
+use std::path;
+
 use macroquad::{
     miniquad::date,
     rand::{ChooseRandom, RandGenerator},
@@ -16,6 +18,7 @@ pub struct WorldMap {
     pub entities: Vec<Vec<usize>>,
     pub auras: Vec<Vec<i16>>,
     pub open: Vec<Vec<bool>>,
+    pub show_terrain: Vec<Vec<bool>>,
     pub flags: Vec<Vec<i16>>,
     pub game_over: bool,
     pub effects: Vec<effect::GameEffect>,
@@ -124,6 +127,7 @@ impl WorldMap {
             entities: vec![vec![0; mapw]; maph],
             auras: vec![vec![0; mapw]; maph],
             open: vec![vec![false; mapw]; maph],
+            show_terrain: vec![vec![false; mapw]; maph],
             flags: vec![vec![0; mapw]; maph],
             effects: vec![],
             entity_store,
@@ -180,6 +184,15 @@ impl WorldMap {
             self.counts[spawn as usize] += 1;
         }
         println!("{}", total);
+    }
+
+    pub fn set_terrain(&mut self, terrains: Vec<Vec<i16>>) {
+        self.terrains = terrains;
+        for i in 0..self.maph {
+            for j in 0..self.mapw {
+                self.show_terrain[i][j] = self.terrains[i][j] == 9;
+            }
+        }
     }
 
     pub fn set_monster(&mut self, x: usize, y: usize, eid: usize) {

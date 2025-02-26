@@ -115,8 +115,7 @@ impl WorldMap {
         effects_store.push([None, None, None, None]);
 
         entity_store.push(entities::MONSTERS[0]); // hero
-        effects_store.push([None, None, None, None]);
-        effects_store[1][0] = Some(GameEffect::Dagger);
+        effects_store.push([Some(GameEffect::Dagger(2)), None, None, None]);
 
         Self {
             mapw,
@@ -175,7 +174,8 @@ impl WorldMap {
 
             let next_id = self.entity_store.len();
             self.entity_store.push(entities::MONSTERS[spawn as usize]);
-            self.effects_store.push([None, None, None, None]);
+            self.effects_store
+                .push(entities::MONSTER_EFFECTS[spawn as usize]);
             self.set_monster(x, y, next_id);
             self.counts[spawn as usize] += 1;
         }
@@ -466,15 +466,17 @@ impl WorldMap {
         let eid = self.entities[y][x];
         let ent = self.entity_store[eid];
         let (herox, heroy) = self.hero_pos;
+        let hero = self.entities[heroy][herox];
+
+        let dx = herox as i16 - x as i16;
+        let dy = heroy as i16 - y as i16;
+        let mut dist = dx * dx + dy * dy;
 
         match ent.breed {
             // player
             0 => {}
             // generic monster
             _ => {
-                let dx = herox as i16 - x as i16;
-                let dy = heroy as i16 - y as i16;
-                let mut dist = dx * dx + dy * dy;
                 let mut nextpos = (x, y);
 
                 for (xx, yy) in neighbors(x, y, self.mapw, self.maph) {
@@ -496,19 +498,12 @@ impl WorldMap {
                     self.set_monster(nextpos.0, nextpos.1, eid);
                     self.set_monster(x, y, 0);
                 }
-
-                // monsters attack
-                if dist <= 2 {
-                    let hero = self.entities[heroy][herox];
-
-                    self.entity_store[hero].hp -= ent.level;
-                }
             }
         }
 
         for effect in self.effects_store[eid] {
             match effect {
-                Some(GameEffect::Dagger) => {
+                Some(GameEffect::Dagger(dmg)) => {
                     for (xx, yy) in neighbors(x, y, self.mapw, self.maph) {
                         // check if open
                         if !self.open[yy][xx] {
@@ -519,11 +514,29 @@ impl WorldMap {
                         let tid = self.entities[yy][xx];
                         let target = &mut self.entity_store[tid];
                         if target.breed > 0 {
-                            target.hp -= ent.damage;
+                            target.hp -= dmg;
                             if target.hp < 1 {
                                 self.set_monster(xx, yy, 0);
                             }
                         }
+                    }
+                }
+                Some(GameEffect::Claw(dmg)) => {
+                    // monsters attack
+                    if dist <= 2 {
+                        self.entity_store[hero].hp -= dmg;
+                    }
+                }
+                Some(GameEffect::Spear(dmg)) => {
+                    // monsters attack
+                    if dist <= 2 {
+                        self.entity_store[hero].hp -= dmg;
+                    }
+                }
+                Some(GameEffect::Missile(dmg)) => {
+                    // monsters attack
+                    if dist <= 9 {
+                        self.entity_store[hero].hp -= dmg;
                     }
                 }
                 _ => {}

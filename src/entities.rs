@@ -105,6 +105,49 @@ pub static MONSTERS: [Entity; 10] = [
     },
 ];
 
+pub static MONSTER_EFFECTS: [[Option<GameEffect>; 4]; 10] = [
+    [Some(GameEffect::Dagger(2)), None, None, None],
+    [
+        Some(GameEffect::Claw(1)),
+        Some(GameEffect::Howl),
+        None,
+        None,
+    ],
+    [Some(GameEffect::Missile(2)), None, None, None],
+    [
+        Some(GameEffect::Spear(3)),
+        Some(GameEffect::Regen(1)),
+        None,
+        None,
+    ],
+    [
+        Some(GameEffect::Claw(4)),
+        Some(GameEffect::VampAura),
+        None,
+        None,
+    ],
+    [Some(GameEffect::Claw(5)), None, None, None],
+    [Some(GameEffect::Wail(6)), None, None, None],
+    [
+        Some(GameEffect::Claw(7)),
+        Some(GameEffect::Regen(2)),
+        None,
+        None,
+    ],
+    [
+        Some(GameEffect::Missile(8)),
+        Some(GameEffect::Regen(3)),
+        None,
+        None,
+    ],
+    [
+        Some(GameEffect::Claw(9)),
+        Some(GameEffect::Immolate(9)),
+        Some(GameEffect::Regen(4)),
+        None,
+    ],
+];
+
 impl Entity {
     pub fn new(proto: &'static Entity) -> Self {
         Self {

@@ -355,8 +355,11 @@ impl WorldMap {
     }
 
     pub fn step(&mut self) {
-        // spiral order, from hero out
+        // spiral order, from hero out, hero has already moved
         let (x, y) = self.hero_pos;
+
+        // take hero turn first
+        self.take_turn(x, y);
 
         let mut top = y as i16;
         let mut bot = y as i16;
@@ -389,6 +392,8 @@ impl WorldMap {
             sidelen += 2;
         }
 
+        // perform slow attacks
+
         // let mut list = Vec::new();
         // for i in 0..self.maph {
         //     for j in 0..self.mapw {
@@ -417,9 +422,6 @@ impl WorldMap {
         if !self.entities[yu][xu].active {
             return;
         }
-        // if !self.open[yu][xu] {
-        //     return;
-        // }
         if self.entities[yu][xu].level < 1 {
             return;
         }
@@ -428,15 +430,27 @@ impl WorldMap {
     }
 
     pub fn take_turn(&mut self, x: usize, y: usize) {
-        let ent = &self.entities[y][x];
+        let ent = self.entities[y][x];
         let (herox, heroy) = self.hero_pos;
-        if x == herox && y == heroy {
-            return;
-        }
 
         match ent.breed {
             // player
-            0 => {}
+            0 => {
+                for (xx, yy) in neighbors(x, y, self.mapw, self.maph) {
+                    // check if open
+                    if !self.open[yy][xx] {
+                        continue;
+                    }
+
+                    // melee
+                    if self.entities[yy][xx].breed > 0 {
+                        self.entities[yy][xx].hp -= ent.damage;
+                        if self.entities[yy][xx].hp < 1 {
+                            self.set_monster(xx, yy, entities::NONE);
+                        }
+                    }
+                }
+            }
             // generic monster
             _ => {
                 let dx = herox as i16 - x as i16;
@@ -458,7 +472,7 @@ impl WorldMap {
 
                 // execute move
                 if nextpos.0 != x || nextpos.1 != y {
-                    self.set_monster(nextpos.0, nextpos.1, *ent);
+                    self.set_monster(nextpos.0, nextpos.1, ent);
                     self.set_monster(x, y, entities::NONE);
                 }
 

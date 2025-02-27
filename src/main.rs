@@ -238,17 +238,25 @@ async fn main() {
         // ██║  ██║██╔══██╗██╔══██║██║███╗██║       ██║   ██╔══╝  ██╔══██╗██╔══██╗██╔══██║██║██║╚██╗██║
         // ██████╔╝██║  ██║██║  ██║╚███╔███╔╝       ██║   ███████╗██║  ██║██║  ██║██║  ██║██║██║ ╚████║
         // ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝ ╚══╝╚══╝        ╚═╝   ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝
-        //
+        // TERRAIN
         for i in 0..maph {
             for j in 0..mapw {
-                let t = world.terrains[i][j];
-                let trow = t / 16;
-                let tmod = t - trow * 16;
+                let terrain = world.terrains[i][j];
+                let trow = terrain / 16;
+                let tmod = terrain - trow * 16;
+                let mut wavex = 0.;
+                let mut wavey = 0.;
+                if terrain == 0 {
+                    wavey = (4. * (t as f32 + i as f32 / 20. + j as f32 / 3.)).sin();
+                }
+                if terrain == 1 {
+                    wavex = (3. * (t as f32 + j as f32 / 20.)).sin() * 0.4;
+                }
 
                 draw_texture_ex(
                     &tiles_tex,
-                    S * j as f32,
-                    S * i as f32,
+                    S * j as f32 + wavex,
+                    S * i as f32 + wavey,
                     TERRAIN_TINT,
                     DrawTextureParams {
                         dest_size,

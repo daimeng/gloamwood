@@ -12,6 +12,7 @@ mod worldmap;
 const Si: i16 = 16;
 const S: f32 = Si as f32;
 
+const OUTER_BG_COLOR: Color = color_u8!(10, 10, 15, 255);
 const BG_COLOR: Color = color_u8!(25, 25, 37, 255);
 const TERRAIN_TINT: Color = color_u8!(255, 255, 255, 220);
 
@@ -228,9 +229,11 @@ async fn main() {
             world = init(mapw, maph, mines);
         }
 
-        clear_background(BG_COLOR);
+        clear_background(OUTER_BG_COLOR);
 
         set_camera(&gamecam);
+
+        draw_rectangle(0., 0., S * mapw as f32, S * maph as f32, BG_COLOR);
 
         // ██████╗ ██████╗  █████╗ ██╗    ██╗    ████████╗███████╗██████╗ ██████╗  █████╗ ██╗███╗   ██╗
         // ██╔══██╗██╔══██╗██╔══██╗██║    ██║    ╚══██╔══╝██╔════╝██╔══██╗██╔══██╗██╔══██╗██║████╗  ██║

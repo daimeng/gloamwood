@@ -314,6 +314,21 @@ async fn main() {
                     continue;
                 }
 
+                if world.terrains[i][j] == 8 {
+                    draw_text_ex(
+                        "?",
+                        S * 2. * j as f32 + 9.,
+                        S * 2. * i as f32 + 23. + 52.,
+                        TextParams {
+                            font: Some(&font),
+                            font_size: 24,
+                            color: WHITE,
+                            ..Default::default()
+                        },
+                    );
+                    continue;
+                }
+
                 if t < 10 {
                     draw_text_ex(
                         &format!("{t}"),

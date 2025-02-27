@@ -418,6 +418,39 @@ impl WorldMap {
         let rings = x.max(self.mapw - x).max(y).max(self.maph - y);
         for _ in 0..rings {
             for j in 0..sidelen {
+                self.take_move_i16(right - j, bot);
+            }
+
+            for i in 0..sidelen {
+                self.take_move_i16(left, bot - i);
+            }
+
+            for j in 0..sidelen {
+                self.take_move_i16(left + j, top);
+            }
+
+            for i in 0..sidelen {
+                self.take_move_i16(right, top + i);
+            }
+
+            top -= 1;
+            left -= 1;
+            right += 1;
+            bot += 1;
+            sidelen += 2;
+        }
+
+        self.take_action(x, y);
+
+        let mut top = y as i16;
+        let mut bot = y as i16;
+        let mut right = x as i16;
+        let mut left = x as i16;
+
+        let mut sidelen = 0;
+        let rings = x.max(self.mapw - x).max(y).max(self.maph - y);
+        for _ in 0..rings {
+            for j in 0..sidelen {
                 self.take_turn_i16(right - j, bot);
             }
 
@@ -472,35 +505,6 @@ impl WorldMap {
         let dy = heroy as i16 - y as i16;
         let mut dist = dx * dx + dy * dy;
 
-        match ent.breed {
-            // player
-            0 => {}
-            // generic monster
-            _ => {
-                let mut nextpos = (x, y);
-
-                for (xx, yy) in neighbors(x, y, self.mapw, self.maph) {
-                    let dx = herox as i16 - xx as i16;
-                    let dy = heroy as i16 - yy as i16;
-                    let d = dx * dx + dy * dy;
-
-                    let target_id = self.entities[yy][xx];
-
-                    // if distance is closer and empty
-                    if d < dist && self.entity_store[target_id].breed == entities::NONE.breed {
-                        dist = d;
-                        nextpos = (xx, yy);
-                    }
-                }
-
-                // execute move
-                if nextpos.0 != x || nextpos.1 != y {
-                    self.set_monster(nextpos.0, nextpos.1, eid);
-                    self.set_monster(x, y, 0);
-                }
-            }
-        }
-
         for effect in self.effects_store[eid] {
             match effect {
                 Some(GameEffect::Dagger(dmg)) => {
@@ -546,12 +550,99 @@ impl WorldMap {
         }
     }
 
-    pub fn take_bonus_action(&mut self, x: usize, y: usize) {
+    #[inline(always)]
+    fn take_move_i16(&mut self, x: i16, y: i16) {
+        let xu = x as usize;
+        let yu = y as usize;
+
+        if x < 0 || y < 0 || xu >= self.mapw || yu >= self.maph {
+            return;
+        }
+        let eid = self.entities[yu][xu];
+        if !self.entity_store[eid].active {
+            return;
+        }
+        if self.entity_store[eid].level < 1 {
+            return;
+        }
+
+        return self.take_move(xu, yu);
+    }
+
+    pub fn take_move(&mut self, x: usize, y: usize) {
+        let eid = self.entities[y][x];
+        let ent = self.entity_store[eid];
+        let (herox, heroy) = self.hero_pos;
+        let hero = self.entities[heroy][herox];
+
+        let dx = herox as i16 - x as i16;
+        let dy = heroy as i16 - y as i16;
+        let mut dist = dx * dx + dy * dy;
+
+        match ent.breed {
+            // player
+            0 => {}
+            // generic monster
+            _ => {
+                let mut nextpos = (x, y);
+
+                for (xx, yy) in neighbors(x, y, self.mapw, self.maph) {
+                    let dx = herox as i16 - xx as i16;
+                    let dy = heroy as i16 - yy as i16;
+                    let d = dx * dx + dy * dy;
+
+                    let target_id = self.entities[yy][xx];
+
+                    // if distance is closer and empty
+                    if d < dist && self.entity_store[target_id].breed == entities::NONE.breed {
+                        dist = d;
+                        nextpos = (xx, yy);
+                    }
+                }
+
+                // execute move
+                if nextpos.0 != x || nextpos.1 != y {
+                    self.set_monster(nextpos.0, nextpos.1, eid);
+                    self.set_monster(x, y, 0);
+                }
+            }
+        }
+    }
+
+    pub fn take_action(&mut self, x: usize, y: usize) {
         let eid = self.entities[y][x];
 
         for effect in self.effects_store[eid] {
             match effect {
                 Some(GameEffect::Sword(dmg)) => {
+                    for (xx, yy) in neighbors(x, y, self.mapw, self.maph) {
+                        // check if open
+                        if !self.open[yy][xx] {
+                            continue;
+                        }
+
+                        // melee
+                        let tid = self.entities[yy][xx];
+                        let target = &mut self.entity_store[tid];
+                        if target.breed > 0 {
+                            target.hp -= dmg;
+                            if target.hp < 1 {
+                                self.set_monster(xx, yy, 0);
+                            }
+                        }
+                    }
+                }
+                _ => {}
+            }
+        }
+    }
+
+    pub fn take_bonus_action(&mut self, x: usize, y: usize) {
+        let eid = self.entities[y][x];
+
+        for effect in self.effects_store[eid] {
+            match effect {
+                Some(GameEffect::Axe(dmg)) => {
                     for (xx, yy) in neighbors(x, y, self.mapw, self.maph) {
                         // check if open
                         if !self.open[yy][xx] {

@@ -7,6 +7,7 @@ use worldmap::neighbors;
 mod effect;
 mod entities;
 mod mapgen;
+mod spawns;
 mod worldmap;
 
 const Si: i16 = 16;
@@ -368,7 +369,7 @@ async fn main() {
                             &tiles_tex,
                             S * 2. * j as f32,
                             S * 2. * i as f32 + 50.,
-                            WHITE,
+                            Color::from_rgba(0, 0, 0, 255),
                             DrawTextureParams {
                                 dest_size: dest_size2,
                                 source: Some(Rect::new(0., S, S * 2., S * 2.)),

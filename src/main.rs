@@ -3,7 +3,6 @@ use macroquad::prelude::*;
 use macroquad::time;
 use macroquad::ui::hash;
 use macroquad::ui::root_ui;
-use worldmap::neighbors;
 mod effect;
 mod entities;
 mod mapgen;
@@ -16,7 +15,6 @@ const S: f32 = Si as f32;
 const BG_COLOR: Color = color_u8!(25, 25, 37, 255);
 const TERRAIN_TINT: Color = color_u8!(255, 255, 255, 220);
 
-const FOUR_SIDES: [(i16, i16); 4] = [(0, -1), (1, 0), (0, 1), (-1, 0)];
 const FOG_LINE: f32 = 1.;
 
 #[macroquad::main("Gloamwood")]

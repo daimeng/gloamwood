@@ -159,7 +159,7 @@ async fn main() {
             );
         }
 
-        if !world.game_over {
+        if world.game_over == 0 {
             if mouse_tile.0 >= 0 && mouse_tile.1 >= 0 {
                 let x = mouse_tile.0 as usize;
                 let y = mouse_tile.1 as usize;
@@ -216,11 +216,6 @@ async fn main() {
                     world.flag_tile(x, y, 9);
                 }
             }
-        }
-
-        // if less than level 1, dead
-        if world.hero().hp < 1 {
-            world.end_game();
         }
 
         // upate last time trackers
@@ -511,14 +506,14 @@ async fn main() {
             Color::new(1., 1., 1., 1.),
         );
 
-        if world.game_over {
+        if world.game_over == 2 {
             let center = get_text_center("Game Over", Option::None, 48, 1.0, 0.);
             draw_text(
                 "Game Over",
                 screen_width() / 2. - center.x,
                 screen_height() / 2. - center.y,
                 48.,
-                Color::new(1., 1., 1., 0.7),
+                Color::new(1., 1., 1., 0.8),
             );
         }
 

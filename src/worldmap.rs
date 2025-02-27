@@ -21,7 +21,7 @@ pub struct WorldMap {
     pub open: Vec<Vec<bool>>,
     pub show_terrain: Vec<Vec<bool>>,
     pub flags: Vec<Vec<i16>>,
-    pub game_over: bool,
+    pub game_over: u16,
     pub effects: Vec<effect::GameEffect>,
     pub hero_pos: (usize, usize),
     pub entity_store: Vec<Entity>,
@@ -76,7 +76,7 @@ impl WorldMap {
             entity_store,
             effects_store,
             hero_pos: (0, 0),
-            game_over: false,
+            game_over: 0,
             search_buffer: vec![(0, 0); maph * mapw],
             gen_pool: (0..mapw * maph).collect(),
             gen_i: 0,
@@ -218,8 +218,8 @@ impl WorldMap {
         &self.entity_store[idx]
     }
 
-    pub fn end_game(&mut self) {
-        self.game_over = true;
+    pub fn end_game(&mut self, win: u16) {
+        self.game_over = win;
 
         for i in 0..self.maph {
             for j in 0..self.mapw {
@@ -417,6 +417,11 @@ impl WorldMap {
         }
 
         self.take_bonus_action(x, y);
+
+        // if less than level 1, dead
+        if self.hero().hp < 1 {
+            self.end_game(2);
+        }
     }
 
     #[inline(always)]

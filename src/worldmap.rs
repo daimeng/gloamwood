@@ -354,6 +354,7 @@ impl WorldMap {
         // spiral order, from hero out, hero has already moved
         let (x, y) = self.hero_pos;
 
+        self.take_move(x, y);
         // take hero turn first
         self.take_turn(x, y);
 
@@ -545,12 +546,19 @@ impl WorldMap {
                     // monsters attack
                     if dist <= 2 {
                         self.entity_store[hero].hp -= dmg;
+                        if self.effects_store[eid].contains(&Some(GameEffect::Vamp)) {
+                            self.entity_store[eid].hp += dmg;
+                        }
                     }
                 }
+                // TODO: move this before move
                 Some(GameEffect::Spear(dmg)) => {
                     // monsters attack
                     if dist <= 2 {
                         self.entity_store[hero].hp -= dmg;
+                        if self.effects_store[eid].contains(&Some(GameEffect::Vamp)) {
+                            self.entity_store[eid].hp += dmg;
+                        }
                     }
                 }
                 Some(GameEffect::Missile(dmg)) => {
@@ -653,10 +661,9 @@ impl WorldMap {
                 Some(GameEffect::VampAura) => {
                     for (xx, yy) in neighbors(x, y, self.mapw, self.maph) {
                         let neighbor_id = self.entities[yy][xx];
-                        let neighbor = &mut self.entity_store[neighbor_id];
-                        let mut effects = self.effects_store[neighbor_id];
-                        if !effects.contains(&Some(GameEffect::Vamp)) {
-                            for eff in effects.iter_mut() {
+
+                        if !self.effects_store[neighbor_id].contains(&Some(GameEffect::Vamp)) {
+                            for eff in self.effects_store[neighbor_id].iter_mut() {
                                 if *eff == None {
                                     *eff = Some(GameEffect::Vamp);
                                 }

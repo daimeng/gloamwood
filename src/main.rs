@@ -1,3 +1,4 @@
+use effect::GameEffect;
 use macroquad::input;
 use macroquad::prelude::*;
 use macroquad::time;
@@ -276,15 +277,20 @@ async fn main() {
         // ██║  ██║██╔══██╗██╔══██║██║███╗██║    ██║╚██╔╝██║██║   ██║██║╚██╗██║╚════██║   ██║   ██╔══╝  ██╔══██╗╚════██║
         // ██████╔╝██║  ██║██║  ██║╚███╔███╔╝    ██║ ╚═╝ ██║╚██████╔╝██║ ╚████║███████║   ██║   ███████╗██║  ██║███████║
         // ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝ ╚══╝╚══╝     ╚═╝     ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚══════╝╚═╝  ╚═╝╚══════╝
-        //
+        // MONSTERS
         for i in 0..maph {
             for j in 0..mapw {
+                let eid = world.entities[i][j];
                 if world.entity(j, i).breed == -1 {
                     continue;
                 }
                 let t = world.entity(j, i).level;
                 let trow = t / 16;
                 let tmod = t - trow * 16;
+
+                if (&world.effects_store)[eid].contains(&Some(GameEffect::Vamp)) {
+                    draw_circle(S * j as f32 + 8., S * i as f32 + 8., 8., RED);
+                }
 
                 draw_texture_ex(
                     &chars_tex,

@@ -120,7 +120,7 @@ pub static MONSTER_EFFECTS: [[Option<GameEffect>; 4]; 10] = [
     [
         Some(GameEffect::Claw(4)),
         Some(GameEffect::VampAura),
-        None,
+        Some(GameEffect::Vamp),
         None,
     ],
     [Some(GameEffect::Claw(5)), None, None, None],

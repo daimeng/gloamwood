@@ -371,29 +371,26 @@ impl WorldMap {
         let mut left = x as i16;
 
         for _ in 0..rings {
-            let xrange = left.max(0)..right.min(mapw - 1);
-            let yrange = top.max(0)..bot.min(maph - 1);
-
             if bot < maph {
-                for j in xrange.clone().rev() {
+                for j in ((left.max(0) + 1)..=right.min(mapw - 1)).rev() {
                     self.take_move_i16(j, bot);
                 }
             }
 
             if left >= 0 {
-                for i in yrange.clone().rev() {
+                for i in ((top.max(0) + 1)..=bot.min(maph - 1)).rev() {
                     self.take_move_i16(left, i);
                 }
             }
 
             if top >= 0 {
-                for j in xrange {
+                for j in left.max(0)..right.min(mapw - 1) {
                     self.take_move_i16(j, top);
                 }
             }
 
             if right < mapw {
-                for i in yrange.rev() {
+                for i in top.max(0)..bot.min(maph - 1) {
                     self.take_move_i16(right, i);
                 }
             }
@@ -411,29 +408,26 @@ impl WorldMap {
         let mut left = x as i16;
 
         for _ in 0..rings {
-            let xrange = left.max(0)..right.min(mapw - 1);
-            let yrange = top.max(0)..bot.min(maph - 1);
-
             if bot < maph {
-                for j in xrange.clone().rev() {
+                for j in ((left.max(0) + 1)..=right.min(mapw - 1)).rev() {
                     self.take_post_move_i16(j, bot);
                 }
             }
 
             if left >= 0 {
-                for i in yrange.clone().rev() {
+                for i in ((top.max(0) + 1)..=bot.min(maph - 1)).rev() {
                     self.take_post_move_i16(left, i);
                 }
             }
 
             if top >= 0 {
-                for j in xrange {
+                for j in left.max(0)..right.min(mapw - 1) {
                     self.take_post_move_i16(j, top);
                 }
             }
 
             if right < mapw {
-                for i in yrange.rev() {
+                for i in top.max(0)..bot.min(maph - 1) {
                     self.take_post_move_i16(right, i);
                 }
             }
@@ -453,29 +447,26 @@ impl WorldMap {
         let mut left = x as i16;
 
         for _ in 0..rings {
-            let xrange = left.max(0)..right.min(mapw - 1);
-            let yrange = top.max(0)..bot.min(maph - 1);
-
             if bot < maph {
-                for j in xrange.clone().rev() {
+                for j in ((left.max(0) + 1)..=right.min(mapw - 1)).rev() {
                     self.take_turn_i16(j, bot);
                 }
             }
 
             if left >= 0 {
-                for i in yrange.clone().rev() {
+                for i in ((top.max(0) + 1)..=bot.min(maph - 1)).rev() {
                     self.take_turn_i16(left, i);
                 }
             }
 
             if top >= 0 {
-                for j in xrange {
+                for j in left.max(0)..right.min(mapw - 1) {
                     self.take_turn_i16(j, top);
                 }
             }
 
             if right < mapw {
-                for i in yrange.rev() {
+                for i in top.max(0)..bot.min(maph - 1) {
                     self.take_turn_i16(right, i);
                 }
             }

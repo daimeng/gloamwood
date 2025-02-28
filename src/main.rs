@@ -253,7 +253,7 @@ async fn main() {
                     wavey = (4. * (t as f32 + i as f32 / 20. + j as f32 / 3.)).sin();
                 }
                 if terrain == 1 {
-                    wavex = (3. * (t as f32 + j as f32 / 20.)).sin() * 0.4;
+                    wavex = (2. * (t as f32 + j as f32 / 20.)).sin() * 0.4;
                 }
 
                 draw_texture_ex(

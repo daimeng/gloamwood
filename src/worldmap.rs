@@ -27,6 +27,7 @@ pub struct WorldMap {
     pub entity_store: Vec<Entity>,
     pub effects_store: Vec<[Option<GameEffect>; 4]>,
     search_buffer: Vec<(usize, usize)>,
+    turn_buffer: Vec<usize>,
     gen_pool: Vec<usize>,
     gen_i: usize,
     first: bool,
@@ -78,6 +79,7 @@ impl WorldMap {
             hero_pos: (0, 0),
             game_over: 0,
             search_buffer: vec![(0, 0); maph * mapw],
+            turn_buffer: Vec::with_capacity(maph * mapw),
             gen_pool: (0..mapw * maph).collect(),
             gen_i: 0,
             first: true,
@@ -352,68 +354,132 @@ impl WorldMap {
         // take hero turn first
         self.take_turn(x, y);
 
+        self.turn_buffer.clear();
+
+        let maph = self.maph as i16;
+        let mapw = self.mapw as i16;
+        let rings = x.max(self.mapw - x).max(y).max(self.maph - y);
+
+        // MOVE
         let mut top = y as i16;
         let mut bot = y as i16;
         let mut right = x as i16;
         let mut left = x as i16;
 
-        let mut sidelen = 0;
-        let rings = x.max(self.mapw - x).max(y).max(self.maph - y);
         for _ in 0..rings {
-            for j in 0..sidelen {
-                self.take_move_i16(right - j, bot);
+            let xrange = (left.max(0)..right.min(mapw - 1));
+            let yrange = (top.max(0)..bot.min(maph - 1));
+
+            if bot < maph {
+                for j in xrange.clone().rev() {
+                    self.take_move_i16(j, bot);
+                }
             }
 
-            for i in 0..sidelen {
-                self.take_move_i16(left, bot - i);
+            if left >= 0 {
+                for i in yrange.clone().rev() {
+                    self.take_move_i16(left, i);
+                }
             }
 
-            for j in 0..sidelen {
-                self.take_move_i16(left + j, top);
+            if top >= 0 {
+                for j in xrange {
+                    self.take_move_i16(j, top);
+                }
             }
 
-            for i in 0..sidelen {
-                self.take_move_i16(right, top + i);
+            if right < mapw {
+                for i in yrange.rev() {
+                    self.take_move_i16(right, i);
+                }
             }
 
             top -= 1;
             left -= 1;
             right += 1;
             bot += 1;
-            sidelen += 2;
+        }
+
+        // POST MOVE
+        let mut top = y as i16;
+        let mut bot = y as i16;
+        let mut right = x as i16;
+        let mut left = x as i16;
+
+        for _ in 0..rings {
+            let xrange = (left.max(0)..right.min(mapw - 1));
+            let yrange = (top.max(0)..bot.min(maph - 1));
+
+            if bot < maph {
+                for j in xrange.clone().rev() {
+                    self.take_post_move_i16(j, bot);
+                }
+            }
+
+            if left >= 0 {
+                for i in yrange.clone().rev() {
+                    self.take_post_move_i16(left, i);
+                }
+            }
+
+            if top >= 0 {
+                for j in xrange {
+                    self.take_post_move_i16(j, top);
+                }
+            }
+
+            if right < mapw {
+                for i in yrange.rev() {
+                    self.take_post_move_i16(right, i);
+                }
+            }
+
+            top -= 1;
+            left -= 1;
+            right += 1;
+            bot += 1;
         }
 
         self.take_action(x, y);
 
+        // ATTACK
         let mut top = y as i16;
         let mut bot = y as i16;
         let mut right = x as i16;
         let mut left = x as i16;
 
-        let mut sidelen = 0;
-        let rings = x.max(self.mapw - x).max(y).max(self.maph - y);
         for _ in 0..rings {
-            for j in 0..sidelen {
-                self.take_turn_i16(right - j, bot);
+            let xrange = (left.max(0)..right.min(mapw - 1));
+            let yrange = (top.max(0)..bot.min(maph - 1));
+
+            if bot < maph {
+                for j in xrange.clone().rev() {
+                    self.take_turn_i16(j, bot);
+                }
             }
 
-            for i in 0..sidelen {
-                self.take_turn_i16(left, bot - i);
+            if left >= 0 {
+                for i in yrange.clone().rev() {
+                    self.take_turn_i16(left, i);
+                }
             }
 
-            for j in 0..sidelen {
-                self.take_turn_i16(left + j, top);
+            if top >= 0 {
+                for j in xrange {
+                    self.take_turn_i16(j, top);
+                }
             }
 
-            for i in 0..sidelen {
-                self.take_turn_i16(right, top + i);
+            if right < mapw {
+                for i in yrange.rev() {
+                    self.take_turn_i16(right, i);
+                }
             }
 
             top -= 1;
             left -= 1;
             right += 1;
             bot += 1;
-            sidelen += 2;
         }
 
         self.take_bonus_action(x, y);
@@ -429,9 +495,6 @@ impl WorldMap {
         let xu = x as usize;
         let yu = y as usize;
 
-        if x < 0 || y < 0 || xu >= self.mapw || yu >= self.maph {
-            return;
-        }
         let eid = self.entities[yu][xu];
         if !self.entity_store[eid].active {
             return;
@@ -503,9 +566,6 @@ impl WorldMap {
         let xu = x as usize;
         let yu = y as usize;
 
-        if x < 0 || y < 0 || xu >= self.mapw || yu >= self.maph {
-            return;
-        }
         let eid = self.entities[yu][xu];
         if !self.entity_store[eid].active {
             return;
@@ -553,6 +613,33 @@ impl WorldMap {
                     self.set_monster(nextpos.0, nextpos.1, eid);
                     self.set_monster(x, y, 0);
                 }
+            }
+        }
+    }
+
+    #[inline(always)]
+    fn take_post_move_i16(&mut self, x: i16, y: i16) {
+        let xu = x as usize;
+        let yu = y as usize;
+
+        let eid = self.entities[yu][xu];
+        if !self.entity_store[eid].active {
+            return;
+        }
+        if self.entity_store[eid].level < 1 {
+            return;
+        }
+
+        return self.take_post_move(xu, yu);
+    }
+
+    pub fn take_post_move(&mut self, x: usize, y: usize) {
+        let eid = self.entities[y][x];
+
+        for effect in self.effects_store[eid] {
+            match effect {
+                Some(GameEffect::VampAura) => {}
+                _ => {}
             }
         }
     }

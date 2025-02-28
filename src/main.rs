@@ -77,7 +77,7 @@ async fn main() {
         w
     };
 
-    let mut animating = false;
+    let animating = false;
     let mut world = init(mapw, maph, mines);
 
     let mut mouse_pos;

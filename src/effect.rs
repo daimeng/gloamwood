@@ -1,7 +1,3 @@
-use crate::{
-    entities,
-    worldmap::{neighbors, WorldMap},
-};
 
 #[derive(Clone, Copy, Debug)]
 pub enum GameEffect {

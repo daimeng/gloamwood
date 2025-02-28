@@ -1,4 +1,3 @@
-use std::path;
 
 use macroquad::{
     miniquad::date,
@@ -367,8 +366,8 @@ impl WorldMap {
         let mut left = x as i16;
 
         for _ in 0..rings {
-            let xrange = (left.max(0)..right.min(mapw - 1));
-            let yrange = (top.max(0)..bot.min(maph - 1));
+            let xrange = left.max(0)..right.min(mapw - 1);
+            let yrange = top.max(0)..bot.min(maph - 1);
 
             if bot < maph {
                 for j in xrange.clone().rev() {
@@ -407,8 +406,8 @@ impl WorldMap {
         let mut left = x as i16;
 
         for _ in 0..rings {
-            let xrange = (left.max(0)..right.min(mapw - 1));
-            let yrange = (top.max(0)..bot.min(maph - 1));
+            let xrange = left.max(0)..right.min(mapw - 1);
+            let yrange = top.max(0)..bot.min(maph - 1);
 
             if bot < maph {
                 for j in xrange.clone().rev() {
@@ -449,8 +448,8 @@ impl WorldMap {
         let mut left = x as i16;
 
         for _ in 0..rings {
-            let xrange = (left.max(0)..right.min(mapw - 1));
-            let yrange = (top.max(0)..bot.min(maph - 1));
+            let xrange = left.max(0)..right.min(mapw - 1);
+            let yrange = top.max(0)..bot.min(maph - 1);
 
             if bot < maph {
                 for j in xrange.clone().rev() {
@@ -514,7 +513,7 @@ impl WorldMap {
 
         let dx = herox as i16 - x as i16;
         let dy = heroy as i16 - y as i16;
-        let mut dist = dx * dx + dy * dy;
+        let dist = dx * dx + dy * dy;
 
         for effect in self.effects_store[eid] {
             match effect {

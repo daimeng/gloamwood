@@ -1,5 +1,4 @@
-
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum GameEffect {
     // player only
     Dagger(i16),
@@ -17,5 +16,6 @@ pub enum GameEffect {
     Spear(i16),
     Wail(i16),
     Raze,
+    Vamp,
     VampAura,
 }

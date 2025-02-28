@@ -1,4 +1,3 @@
-
 use macroquad::{
     miniquad::date,
     rand::{ChooseRandom, RandGenerator},
@@ -34,18 +33,23 @@ pub struct WorldMap {
 }
 
 pub fn neighbors(x: usize, y: usize, w: usize, h: usize) -> impl Iterator<Item = (usize, usize)> {
-    (0..3).flat_map(move |dy| {
+    return neighborsn(x as i16, y as i16, w as i16, h as i16, 1);
+}
+
+#[inline(always)]
+pub fn neighborsn(x: i16, y: i16, w: i16, h: i16, n: i16) -> impl Iterator<Item = (usize, usize)> {
+    (-n..=n).flat_map(move |dy| {
         let yy = y + dy;
-        (0..3).filter_map(move |dx| {
-            if yy == 0 || yy > h {
+        (-n..=n).filter_map(move |dx| {
+            if yy < 0 || yy >= h {
                 return None;
             }
 
             let xx = x + dx;
-            if xx == 0 || xx > w {
+            if xx < 0 || xx >= w {
                 None
             } else {
-                Some((xx - 1, yy - 1))
+                Some((xx as usize, yy as usize))
             }
         })
     })
@@ -614,6 +618,14 @@ impl WorldMap {
                 }
             }
         }
+
+        // Clear vamp buffs
+        for effect in self.effects_store[eid].iter_mut() {
+            match effect {
+                Some(GameEffect::Vamp) => *effect = None,
+                _ => {}
+            }
+        }
     }
 
     #[inline(always)]
@@ -637,7 +649,21 @@ impl WorldMap {
 
         for effect in self.effects_store[eid] {
             match effect {
-                Some(GameEffect::VampAura) => {}
+                // reefect vamp effects
+                Some(GameEffect::VampAura) => {
+                    for (xx, yy) in neighbors(x, y, self.mapw, self.maph) {
+                        let neighbor_id = self.entities[yy][xx];
+                        let neighbor = &mut self.entity_store[neighbor_id];
+                        let mut effects = self.effects_store[neighbor_id];
+                        if !effects.contains(&Some(GameEffect::Vamp)) {
+                            for eff in effects.iter_mut() {
+                                if *eff == None {
+                                    *eff = Some(GameEffect::Vamp);
+                                }
+                            }
+                        }
+                    }
+                }
                 _ => {}
             }
         }

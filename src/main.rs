@@ -167,9 +167,7 @@ async fn main() {
                 if left_click {
                     // guard against accidental click
                     if world.flags[y][x] == 0 {
-                        if !world.open_tile(x, y) {
-                            world.step();
-                        }
+                        world.open_tile(x, y);
                     }
                 }
 

@@ -303,13 +303,15 @@ impl WorldMap {
         let opened = self.open_tile_(x, y);
 
         if opened == 0 {
-            // move hero if empty
             let eid = self.entities[y][x];
+
             if self.entity_store[eid].breed == -1 {
                 self.set_monster(x, y, 1);
                 self.set_monster(self.hero_pos.0, self.hero_pos.1, 0);
                 self.hero_pos = (x, y);
             }
+
+            self.step();
         }
 
         return opened > 0;
@@ -355,6 +357,7 @@ impl WorldMap {
         let (x, y) = self.hero_pos;
 
         self.take_move(x, y);
+
         // take hero turn first
         self.take_turn(x, y);
 
@@ -572,9 +575,6 @@ impl WorldMap {
         if !self.entity_store[eid].active {
             return;
         }
-        if self.entity_store[eid].level < 1 {
-            return;
-        }
 
         return self.take_move(xu, yu);
     }
@@ -583,7 +583,6 @@ impl WorldMap {
         let eid = self.entities[y][x];
         let ent = self.entity_store[eid];
         let (herox, heroy) = self.hero_pos;
-        let hero = self.entities[heroy][herox];
 
         let dx = herox as i16 - x as i16;
         let dy = heroy as i16 - y as i16;

@@ -376,25 +376,25 @@ impl WorldMap {
         for _ in 0..rings {
             if bot < maph {
                 for j in ((left.max(0) + 1)..=right.min(mapw - 1)).rev() {
-                    self.take_move_i16(j, bot);
+                    self.take_move(j as usize, bot as usize);
                 }
             }
 
             if left >= 0 {
                 for i in ((top.max(0) + 1)..=bot.min(maph - 1)).rev() {
-                    self.take_move_i16(left, i);
+                    self.take_move(left as usize, i as usize);
                 }
             }
 
             if top >= 0 {
                 for j in left.max(0)..right.min(mapw - 1) {
-                    self.take_move_i16(j, top);
+                    self.take_move(j as usize, top as usize);
                 }
             }
 
             if right < mapw {
                 for i in top.max(0)..bot.min(maph - 1) {
-                    self.take_move_i16(right, i);
+                    self.take_move(right as usize, i as usize);
                 }
             }
 
@@ -413,25 +413,25 @@ impl WorldMap {
         for _ in 0..rings {
             if bot < maph {
                 for j in ((left.max(0) + 1)..=right.min(mapw - 1)).rev() {
-                    self.take_post_move_i16(j, bot);
+                    self.take_post_move(j as usize, bot as usize);
                 }
             }
 
             if left >= 0 {
                 for i in ((top.max(0) + 1)..=bot.min(maph - 1)).rev() {
-                    self.take_post_move_i16(left, i);
+                    self.take_post_move(left as usize, i as usize);
                 }
             }
 
             if top >= 0 {
                 for j in left.max(0)..right.min(mapw - 1) {
-                    self.take_post_move_i16(j, top);
+                    self.take_post_move(j as usize, top as usize);
                 }
             }
 
             if right < mapw {
                 for i in top.max(0)..bot.min(maph - 1) {
-                    self.take_post_move_i16(right, i);
+                    self.take_post_move(right as usize, i as usize);
                 }
             }
 
@@ -441,7 +441,7 @@ impl WorldMap {
             bot += 1;
         }
 
-        self.take_action(x, y);
+        self.take_hero_action(x, y);
 
         // ATTACK
         let mut top = y as i16;
@@ -452,25 +452,25 @@ impl WorldMap {
         for _ in 0..rings {
             if bot < maph {
                 for j in ((left.max(0) + 1)..=right.min(mapw - 1)).rev() {
-                    self.take_turn_i16(j, bot);
+                    self.take_turn(j as usize, bot as usize);
                 }
             }
 
             if left >= 0 {
                 for i in ((top.max(0) + 1)..=bot.min(maph - 1)).rev() {
-                    self.take_turn_i16(left, i);
+                    self.take_turn(left as usize, i as usize);
                 }
             }
 
             if top >= 0 {
                 for j in left.max(0)..right.min(mapw - 1) {
-                    self.take_turn_i16(j, top);
+                    self.take_turn(j as usize, top as usize);
                 }
             }
 
             if right < mapw {
                 for i in top.max(0)..bot.min(maph - 1) {
-                    self.take_turn_i16(right, i);
+                    self.take_turn(right as usize, i as usize);
                 }
             }
 
@@ -480,7 +480,7 @@ impl WorldMap {
             bot += 1;
         }
 
-        self.take_bonus_action(x, y);
+        self.take_hero_bonus_action(x, y);
 
         // if less than level 1, dead
         if self.hero().hp < 1 {
@@ -488,24 +488,12 @@ impl WorldMap {
         }
     }
 
-    #[inline(always)]
-    fn take_turn_i16(&mut self, x: i16, y: i16) {
-        let xu = x as usize;
-        let yu = y as usize;
-
-        let eid = self.entities[yu][xu];
+    pub fn take_turn(&mut self, x: usize, y: usize) {
+        let eid = self.entities[y][x];
         if !self.entity_store[eid].active {
             return;
         }
-        if self.entity_store[eid].level < 1 {
-            return;
-        }
 
-        return self.take_turn(xu, yu);
-    }
-
-    pub fn take_turn(&mut self, x: usize, y: usize) {
-        let eid = self.entities[y][x];
         let ent = self.entity_store[eid];
         let (herox, heroy) = self.hero_pos;
         let hero = self.entities[heroy][herox];
@@ -566,21 +554,12 @@ impl WorldMap {
         }
     }
 
-    #[inline(always)]
-    fn take_move_i16(&mut self, x: i16, y: i16) {
-        let xu = x as usize;
-        let yu = y as usize;
-
-        let eid = self.entities[yu][xu];
+    pub fn take_move(&mut self, x: usize, y: usize) {
+        let eid = self.entities[y][x];
         if !self.entity_store[eid].active {
             return;
         }
 
-        return self.take_move(xu, yu);
-    }
-
-    pub fn take_move(&mut self, x: usize, y: usize) {
-        let eid = self.entities[y][x];
         let ent = self.entity_store[eid];
         let (herox, heroy) = self.hero_pos;
 
@@ -626,24 +605,14 @@ impl WorldMap {
         }
     }
 
-    #[inline(always)]
-    fn take_post_move_i16(&mut self, x: i16, y: i16) {
-        let xu = x as usize;
-        let yu = y as usize;
-
-        let eid = self.entities[yu][xu];
+    pub fn take_post_move(&mut self, x: usize, y: usize) {
+        let eid = self.entities[y][x];
         if !self.entity_store[eid].active {
             return;
         }
         if self.entity_store[eid].level < 1 {
             return;
         }
-
-        return self.take_post_move(xu, yu);
-    }
-
-    pub fn take_post_move(&mut self, x: usize, y: usize) {
-        let eid = self.entities[y][x];
 
         for effect in self.effects_store[eid] {
             match effect {
@@ -666,7 +635,7 @@ impl WorldMap {
         }
     }
 
-    pub fn take_action(&mut self, x: usize, y: usize) {
+    pub fn take_hero_action(&mut self, x: usize, y: usize) {
         let eid = self.entities[y][x];
 
         for effect in self.effects_store[eid] {
@@ -694,7 +663,7 @@ impl WorldMap {
         }
     }
 
-    pub fn take_bonus_action(&mut self, x: usize, y: usize) {
+    pub fn take_hero_bonus_action(&mut self, x: usize, y: usize) {
         let eid = self.entities[y][x];
 
         for effect in self.effects_store[eid] {

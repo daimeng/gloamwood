@@ -279,10 +279,11 @@ async fn main() {
         for i in 0..maph {
             for j in 0..mapw {
                 let eid = world.entities[i][j];
-                if world.entity(j, i).breed == -1 {
+                let ent = world.entity(j, i);
+                if ent.breed == -1 {
                     continue;
                 }
-                let t = world.entity(j, i).level;
+                let t = ent.level;
                 let trow = t / 16;
                 let tmod = t - trow * 16;
 
@@ -301,6 +302,12 @@ async fn main() {
                         ..Default::default()
                     },
                 );
+
+                if ent.breed < 1 {
+                    continue;
+                }
+
+                draw_rectangle(S * j as f32, S * i as f32, ent.hp as f32, 1., RED);
             }
         }
         set_default_camera();

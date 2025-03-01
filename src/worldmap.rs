@@ -355,17 +355,51 @@ impl WorldMap {
     pub fn step(&mut self) {
         // spiral order, from hero out, hero has already moved
         let (x, y) = self.hero_pos;
-
-        self.take_move(x, y);
-
-        // take hero turn first
-        self.take_turn(x, y);
-
-        self.turn_buffer.clear();
-
+        // self.turn_buffer.clear();
         let maph = self.maph as i16;
         let mapw = self.mapw as i16;
         let rings = x.max(self.mapw - x).max(y).max(self.maph - y);
+
+        self.take_move(x, y);
+        // PRE MOVE MONSTER
+        let mut top = y as i16;
+        let mut bot = y as i16;
+        let mut right = x as i16;
+        let mut left = x as i16;
+
+        for _ in 0..rings {
+            if bot < maph {
+                for j in ((left.max(0) + 1)..=right.min(mapw - 1)).rev() {
+                    self.take_pre_move(j as usize, bot as usize);
+                }
+            }
+
+            if left >= 0 {
+                for i in ((top.max(0) + 1)..=bot.min(maph - 1)).rev() {
+                    self.take_pre_move(left as usize, i as usize);
+                }
+            }
+
+            if top >= 0 {
+                for j in left.max(0)..right.min(mapw - 1) {
+                    self.take_pre_move(j as usize, top as usize);
+                }
+            }
+
+            if right < mapw {
+                for i in top.max(0)..bot.min(maph - 1) {
+                    self.take_pre_move(right as usize, i as usize);
+                }
+            }
+
+            top -= 1;
+            left -= 1;
+            right += 1;
+            bot += 1;
+        }
+
+        // take hero turn first
+        self.take_turn(x, y);
 
         // MOVE
         let mut top = y as i16;
@@ -494,7 +528,6 @@ impl WorldMap {
             return;
         }
 
-        let ent = self.entity_store[eid];
         let (herox, heroy) = self.hero_pos;
         let hero = self.entities[heroy][herox];
 
@@ -525,16 +558,6 @@ impl WorldMap {
                     }
                 }
                 Some(GameEffect::Claw(dmg)) => {
-                    // monsters attack
-                    if dist <= 2 {
-                        self.entity_store[hero].hp -= dmg;
-                        if self.effects_store[eid].contains(&Some(GameEffect::Vamp)) {
-                            self.entity_store[eid].hp += dmg;
-                        }
-                    }
-                }
-                // TODO: move this before move
-                Some(GameEffect::Spear(dmg)) => {
                     // monsters attack
                     if dist <= 2 {
                         self.entity_store[hero].hp -= dmg;
@@ -627,6 +650,38 @@ impl WorldMap {
                                     *eff = Some(GameEffect::Vamp);
                                 }
                             }
+                        }
+                    }
+                }
+                _ => {}
+            }
+        }
+    }
+
+    pub fn take_pre_move(&mut self, x: usize, y: usize) {
+        let eid = self.entities[y][x];
+        if !self.entity_store[eid].active {
+            return;
+        }
+        if self.entity_store[eid].level < 1 {
+            return;
+        }
+        let (herox, heroy) = self.hero_pos;
+        let heroid = self.entities[heroy][herox];
+
+        let dx = herox as i16 - x as i16;
+        let dy = heroy as i16 - y as i16;
+        let dist = dx * dx + dy * dy;
+
+        for effect in self.effects_store[eid] {
+            match effect {
+                // TODO: move this before move
+                Some(GameEffect::Spear(dmg)) => {
+                    // monsters attack
+                    if dist <= 2 {
+                        self.entity_store[heroid].hp -= dmg;
+                        if self.effects_store[eid].contains(&Some(GameEffect::Vamp)) {
+                            self.entity_store[eid].hp += dmg;
                         }
                     }
                 }

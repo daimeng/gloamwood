@@ -518,13 +518,34 @@ async fn main() {
             );
         }
 
-        draw_text(
-            &format!("HP: {}", world.hero().hp),
-            screen_width() / 2.,
-            20.,
-            36.,
-            Color::new(1., 1., 1., 1.),
-        );
+        if world.initialized {
+            let (herox, heroy) = world.hero_pos;
+            let heroid = world.entities[heroy][herox];
+
+            draw_text(
+                &format!("HP: {}", world.hero().hp),
+                screen_width() / 2.,
+                20.,
+                36.,
+                Color::new(1., 1., 1., 1.),
+            );
+
+            for (i, effect) in world.effects_store[heroid].iter().enumerate() {
+                draw_rectangle_lines(
+                    100. + 50. * i as f32,
+                    5.,
+                    36.,
+                    36.,
+                    2.,
+                    Color::new(1., 1., 1., 1.),
+                );
+
+                match effect {
+                    Some(effect) => {}
+                    None => {}
+                }
+            }
+        }
 
         if world.game_over == 2 {
             let center = get_text_center("Game Over", Option::None, 48, 1.0, 0.);

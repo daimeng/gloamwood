@@ -28,7 +28,7 @@ pub struct WorldMap {
     turn_buffer: Vec<usize>,
     gen_pool: Vec<usize>,
     gen_i: usize,
-    first: bool,
+    pub initialized: bool,
     pub counts: [i16; 10],
 }
 
@@ -85,7 +85,7 @@ impl WorldMap {
             turn_buffer: Vec::with_capacity(maph * mapw),
             gen_pool: (0..mapw * maph).collect(),
             gen_i: 0,
-            first: true,
+            initialized: false,
             counts: [0; 10],
         }
     }
@@ -243,12 +243,12 @@ impl WorldMap {
         }
 
         // move mines out of way for first click
-        if self.first {
+        if !self.initialized {
             self.remine(x, y);
             self.set_monster(x, y, 1);
             self.hero_pos = (x, y);
         }
-        self.first = false;
+        self.initialized = true;
 
         let mut j = 0;
 

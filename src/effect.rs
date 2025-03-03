@@ -7,15 +7,15 @@ pub enum GameEffect {
 
     // common
     Missile(i16),
-    Immolate(i16),
+    Immolate, // damage self, fire resist
     Regen(i16),
+    Vamp,
 
     // monster only
     Claw(i16),
     Howl,
     Spear(i16),
-    Wail(i16),
-    Raze,
-    Vamp,
+    Wail,
+    Pounce,
     VampAura,
 }

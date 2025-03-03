@@ -288,7 +288,7 @@ async fn main() {
                 let tmod = t - trow * 16;
 
                 if (&world.effects_store)[eid].contains(&Some(GameEffect::Vamp)) {
-                    draw_circle(S * j as f32 + 8., S * i as f32 + 8., 8., RED);
+                    draw_circle(S * j as f32 + 8., S * i as f32 + 8., 6., RED);
                 }
 
                 draw_texture_ex(

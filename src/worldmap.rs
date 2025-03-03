@@ -312,12 +312,48 @@ impl WorldMap {
             }
 
             self.step();
+        } else {
+            // on open triggers
+            let eid = self.entities[y][x];
+            if eid > 1 {
+                for effect in self.effects_store[eid] {
+                    match effect {
+                        Some(GameEffect::Wail) => {
+                            for (xx, yy) in neighborsn(
+                                x as i16,
+                                y as i16,
+                                self.mapw as i16,
+                                self.maph as i16,
+                                2,
+                            ) {
+                                if xx == x && yy == y {
+                                    continue;
+                                }
+
+                                let neighbor_id = self.entities[yy][xx];
+                                let neighbor = &mut self.entity_store[neighbor_id];
+
+                                if neighbor.breed == 0 || neighbor.level % 2 == 1 {
+                                    neighbor.hp -= 6;
+                                }
+                            }
+                        }
+                        Some(GameEffect::Pounce) => {}
+                        _ => {}
+                    }
+                }
+            }
         }
 
         return opened > 0;
     }
 
     pub fn chord_tile(&mut self, x: usize, y: usize) {
+        // prevent chording on cloud tiles
+        if self.terrains[y][x] == 8 {
+            return;
+        }
+
         // only chord open tiles
         if !self.open[y][x] {
             return;
@@ -675,7 +711,22 @@ impl WorldMap {
 
         for effect in self.effects_store[eid] {
             match effect {
-                // TODO: move this before move
+                Some(GameEffect::Wail) => {
+                    for (xx, yy) in
+                        neighborsn(x as i16, y as i16, self.mapw as i16, self.maph as i16, 2)
+                    {
+                        if xx == x && yy == y {
+                            continue;
+                        }
+
+                        let neighbor_id = self.entities[yy][xx];
+                        let neighbor = &mut self.entity_store[neighbor_id];
+
+                        if neighbor.breed == 0 || neighbor.level % 2 == 1 {
+                            neighbor.hp -= 6;
+                        }
+                    }
+                }
                 Some(GameEffect::Spear(dmg)) => {
                     // monsters attack
                     if dist <= 2 {

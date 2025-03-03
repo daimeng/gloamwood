@@ -6,7 +6,6 @@ pub struct Entity {
     pub breed: i16,
     pub level: i16,
     pub hp: i16,
-    pub damage: i16,
     pub active: bool,
 }
 
@@ -15,7 +14,6 @@ pub static NONE: Entity = Entity {
     breed: -1,
     level: 0,
     hp: 999,
-    damage: 0,
     active: false,
 };
 
@@ -24,8 +22,7 @@ pub static MONSTERS: [Entity; 10] = [
         proto: None,
         breed: 0,
         level: 0,
-        hp: 100,
-        damage: 2,
+        hp: 10,
         active: false,
     },
     Entity {
@@ -33,7 +30,6 @@ pub static MONSTERS: [Entity; 10] = [
         breed: 1,
         level: 1,
         hp: 1,
-        damage: 1,
         active: false,
     },
     Entity {
@@ -41,7 +37,6 @@ pub static MONSTERS: [Entity; 10] = [
         breed: 2,
         level: 2,
         hp: 2,
-        damage: 1,
         active: false,
     },
     Entity {
@@ -49,7 +44,6 @@ pub static MONSTERS: [Entity; 10] = [
         breed: 3,
         level: 3,
         hp: 3,
-        damage: 1,
         active: false,
     },
     Entity {
@@ -57,7 +51,6 @@ pub static MONSTERS: [Entity; 10] = [
         breed: 4,
         level: 4,
         hp: 4,
-        damage: 1,
         active: false,
     },
     Entity {
@@ -65,7 +58,6 @@ pub static MONSTERS: [Entity; 10] = [
         breed: 5,
         level: 5,
         hp: 5,
-        damage: 1,
         active: false,
     },
     Entity {
@@ -73,7 +65,6 @@ pub static MONSTERS: [Entity; 10] = [
         breed: 6,
         level: 6,
         hp: 6,
-        damage: 1,
         active: false,
     },
     Entity {
@@ -81,7 +72,6 @@ pub static MONSTERS: [Entity; 10] = [
         breed: 7,
         level: 7,
         hp: 7,
-        damage: 1,
         active: false,
     },
     Entity {
@@ -89,7 +79,6 @@ pub static MONSTERS: [Entity; 10] = [
         breed: 8,
         level: 8,
         hp: 8,
-        damage: 1,
         active: false,
     },
     Entity {
@@ -97,7 +86,6 @@ pub static MONSTERS: [Entity; 10] = [
         breed: 9,
         level: 9,
         hp: 9,
-        damage: 1,
         active: false,
     },
 ];
@@ -123,8 +111,13 @@ pub static MONSTER_EFFECTS: [[Option<GameEffect>; 4]; 10] = [
         Some(GameEffect::Vamp),
         None,
     ],
-    [Some(GameEffect::Claw(5)), None, None, None],
-    [Some(GameEffect::Wail(6)), None, None, None],
+    [
+        Some(GameEffect::Claw(5)),
+        Some(GameEffect::Pounce),
+        None,
+        None,
+    ],
+    [Some(GameEffect::Wail), None, None, None],
     [
         Some(GameEffect::Claw(7)),
         Some(GameEffect::Regen(2)),
@@ -139,7 +132,7 @@ pub static MONSTER_EFFECTS: [[Option<GameEffect>; 4]; 10] = [
     ],
     [
         Some(GameEffect::Claw(9)),
-        Some(GameEffect::Immolate(9)),
+        Some(GameEffect::Immolate),
         Some(GameEffect::Regen(4)),
         None,
     ],
@@ -152,7 +145,6 @@ impl Entity {
             breed: proto.breed,
             level: proto.level,
             hp: proto.hp,
-            damage: proto.damage,
             active: proto.active,
         }
     }

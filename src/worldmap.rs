@@ -296,6 +296,7 @@ impl WorldMap {
     }
 
     pub fn open_tile(&mut self, x: usize, y: usize) -> bool {
+        // possible for tile to be open based on another effect
         if self.open[y][x] {
             if self.entities[y][x] > 1 {
                 self.attack(x, y);
@@ -308,6 +309,7 @@ impl WorldMap {
 
             // step forward game if monster attacked or opened
             if self.entities[y][x] > 1 {
+                self.attack(x, y);
                 self.step(x, y);
             }
 
@@ -315,7 +317,14 @@ impl WorldMap {
         }
     }
 
-    fn attack(&mut self, x: usize, y: usize) {}
+    fn attack(&mut self, x: usize, y: usize) {
+        let eid = self.entities[y][x];
+        let heroid = self.entities[self.hero_pos.1][self.hero_pos.0];
+
+        if eid > 1 {
+            self.entity_store[heroid].hp -= self.entity_store[eid].breed;
+        }
+    }
 
     pub fn chord_tile(&mut self, x: usize, y: usize) {
         // prevent chording on cloud tiles
@@ -370,17 +379,6 @@ impl WorldMap {
 
                 if ent.breed > 0 && ent.breed % 2 == 0 {
                     evil_count += ent.breed;
-                }
-
-                // skip hp tax for recently opened or attack target
-                if idx == eid {
-                    continue;
-                }
-
-                // hp tax on player for showing tile
-                if self.entity_store[idx].level > 0 && ent.active {
-                    let hero = &mut self.entity_store[heroid];
-                    hero.hp -= 1;
                 }
             }
         }

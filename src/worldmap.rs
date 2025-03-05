@@ -321,7 +321,8 @@ impl WorldMap {
                     self.entity_store[heroid].hp += 1;
                     self.maxhp += 1;
                 } else {
-                    self.entity_store[heroid].hp += 2;
+                    self.entity_store[heroid].hp =
+                        (self.entity_store[heroid].hp + 2).min(self.maxhp);
                 }
             } else {
                 self.item = target.breed as usize;
@@ -346,6 +347,7 @@ impl WorldMap {
                     } else if eff.contains(&target.breed) {
                         self.entity_store[heroid].hp +=
                             self.item as i16 - self.entity_store[eid].breed;
+                        self.entity_store[heroid].hp = self.entity_store[heroid].hp.min(self.maxhp);
                     } else {
                         self.entity_store[heroid].hp -= 2 * self.entity_store[eid].breed;
                     }

@@ -391,7 +391,7 @@ impl WorldMap {
                     continue;
                 }
 
-                self.open_tile_(xx, yy);
+                self.open_tile(xx, yy);
             }
         }
     }

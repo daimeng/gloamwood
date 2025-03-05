@@ -19,7 +19,6 @@ pub struct WorldMap {
     pub show_terrain: Vec<Vec<bool>>,
     pub flags: Vec<Vec<i16>>,
     pub game_over: u16,
-    pub effects: Vec<effect::GameEffect>,
     pub hero_pos: (usize, usize),
     pub entity_store: Vec<Entity>,
     pub effects_store: Vec<[Option<GameEffect>; 4]>,
@@ -73,7 +72,6 @@ impl WorldMap {
             open: vec![vec![false; mapw]; maph],
             show_terrain: vec![vec![false; mapw]; maph],
             flags: vec![vec![0; mapw]; maph],
-            effects: vec![],
             entity_store,
             effects_store,
             hero_pos: (0, 0),
@@ -323,6 +321,7 @@ impl WorldMap {
 
         if eid > 1 {
             self.entity_store[heroid].hp -= self.entity_store[eid].breed;
+            self.entity_store[eid].hp = 0;
         }
     }
 
@@ -378,10 +377,12 @@ impl WorldMap {
                 let ent = self.entity_store[idx];
 
                 if ent.breed > 0 && ent.breed % 2 == 0 {
-                    evil_count += ent.breed;
+                    evil_count += ent.hp;
                 }
             }
         }
+
+        println!("Remaining: {}", evil_count);
 
         if self.entity_store[heroid].hp < 1 {
             self.end_game(2);

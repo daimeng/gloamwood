@@ -30,8 +30,8 @@
 // 10 lava
 
 pub static SPAWNS: [&[usize]; 11] = [
-    &[3, 4, 6, 9],             //deep
-    &[2, 3, 4, 6],             //shallow
+    &[1, 3, 4, 6, 9],          //deep
+    &[1, 2, 3, 4, 6],          //shallow
     &[1, 2, 3, 4, 6, 8],       //swamp
     &[1, 2, 3, 6],             //plain
     &[1, 2, 3, 4, 5, 6, 8],    //forest
@@ -40,7 +40,7 @@ pub static SPAWNS: [&[usize]; 11] = [
     &[1, 2, 4, 5, 6, 7, 8, 9], //mountain
     &[1, 2, 4, 5, 6, 7, 8, 9], //clouds
     &[1, 2, 4, 6, 7, 8, 9],    //peak
-    &[6, 7, 9],                //lava
+    &[1, 6, 7, 9],             //lava
 ];
 
 pub static NO_FOLLOW: [&[usize]; 11] = [

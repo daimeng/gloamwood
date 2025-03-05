@@ -92,12 +92,7 @@ pub static MONSTERS: [Entity; 10] = [
 
 pub static MONSTER_EFFECTS: [[Option<GameEffect>; 4]; 10] = [
     [Some(GameEffect::Dagger(2)), None, None, None],
-    [
-        Some(GameEffect::Claw(1)),
-        Some(GameEffect::Howl),
-        None,
-        None,
-    ],
+    [Some(GameEffect::Claw(1)), None, None, None],
     [Some(GameEffect::Missile(2)), None, None, None],
     [
         Some(GameEffect::Spear(3)),

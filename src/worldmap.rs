@@ -14,7 +14,6 @@ pub struct WorldMap {
     pub maph: usize,
     pub terrains: Vec<Vec<i16>>,
     pub entities: Vec<Vec<usize>>,
-    pub items: Vec<Vec<usize>>,
     pub auras: Vec<Vec<i16>>,
     pub open: Vec<Vec<bool>>,
     pub show_terrain: Vec<Vec<bool>>,
@@ -25,7 +24,6 @@ pub struct WorldMap {
     pub entity_store: Vec<Entity>,
     pub effects_store: Vec<[Option<GameEffect>; 4]>,
     search_buffer: Vec<(usize, usize)>,
-    turn_buffer: Vec<usize>,
     gen_pool: Vec<usize>,
     gen_i: usize,
     pub initialized: bool,
@@ -71,7 +69,6 @@ impl WorldMap {
             maph,
             terrains: vec![vec![0; mapw]; maph],
             entities: vec![vec![0; mapw]; maph],
-            items: vec![vec![0; mapw]; maph],
             auras: vec![vec![0; mapw]; maph],
             open: vec![vec![false; mapw]; maph],
             show_terrain: vec![vec![false; mapw]; maph],
@@ -82,7 +79,6 @@ impl WorldMap {
             hero_pos: (0, 0),
             game_over: 0,
             search_buffer: vec![(0, 0); maph * mapw],
-            turn_buffer: Vec::with_capacity(maph * mapw),
             gen_pool: (0..mapw * maph).collect(),
             gen_i: 0,
             initialized: false,
@@ -391,7 +387,6 @@ impl WorldMap {
     pub fn step(&mut self) {
         // spiral order, from hero out, hero has already moved
         let (x, y) = self.hero_pos;
-        // self.turn_buffer.clear();
         let maph = self.maph as i16;
         let mapw = self.mapw as i16;
         let rings = x.max(self.mapw - x).max(y).max(self.maph - y);

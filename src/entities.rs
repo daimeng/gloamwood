@@ -1,5 +1,3 @@
-use crate::effect::GameEffect;
-
 #[derive(Clone, Copy, Debug)]
 pub struct Entity {
     pub proto: Option<&'static Entity>,
@@ -88,49 +86,6 @@ pub static MONSTERS: [Entity; 10] = [
         hp: 9,
         active: false,
     },
-];
-
-pub static MONSTER_EFFECTS: [[Option<GameEffect>; 4]; 10] = [
-    [Some(GameEffect::Dagger(2)), None, None, None],
-    [Some(GameEffect::Claw(1)), None, None, None],
-    [Some(GameEffect::Missile(2)), None, None, None],
-    [
-        Some(GameEffect::Spear(3)),
-        Some(GameEffect::Regen(1)),
-        None,
-        None,
-    ],
-    [
-        Some(GameEffect::Claw(4)),
-        Some(GameEffect::VampAura),
-        Some(GameEffect::Vamp),
-        None,
-    ],
-    [
-        Some(GameEffect::Claw(5)),
-        Some(GameEffect::Pounce),
-        None,
-        None,
-    ],
-    [Some(GameEffect::Wail), None, None, None],
-    [
-        Some(GameEffect::Claw(7)),
-        Some(GameEffect::Regen(2)),
-        None,
-        None,
-    ],
-    [
-        Some(GameEffect::Missile(8)),
-        Some(GameEffect::Regen(3)),
-        None,
-        None,
-    ],
-    [
-        Some(GameEffect::Claw(9)),
-        Some(GameEffect::Immolate),
-        Some(GameEffect::Regen(4)),
-        None,
-    ],
 ];
 
 impl Entity {

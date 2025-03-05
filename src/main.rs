@@ -1,10 +1,10 @@
-use effect::GameEffect;
+use items::EFFECTIVE;
+use items::INEFFECTIVE;
 use macroquad::input;
 use macroquad::prelude::*;
 use macroquad::time;
 use macroquad::ui::hash;
 use macroquad::ui::root_ui;
-mod effect;
 mod entities;
 mod items;
 mod mapgen;
@@ -288,10 +288,6 @@ async fn main() {
                 let trow = t / 16;
                 let tmod = t - trow * 16;
 
-                // if (&world.effects_store)[eid].contains(&Some(GameEffect::Vamp)) {
-                //     draw_circle(S * j as f32 + 8., S * i as f32 + 8., 6., RED);
-                // }
-
                 draw_texture_ex(
                     &chars_tex,
                     S * j as f32,
@@ -522,7 +518,7 @@ async fn main() {
                 screen_width() / 2.,
                 20.,
                 36.,
-                Color::new(1., 1., 1., 1.),
+                WHITE,
             );
 
             draw_rectangle_lines(100., 5., 32., 32., 2., Color::new(1., 1., 1., 1.));
@@ -541,6 +537,36 @@ async fn main() {
                     }),
                     ..Default::default()
                 },
+            );
+
+            draw_text(&format!("{}", world.item), 80., 30., 36., WHITE);
+            draw_text(
+                &format!(
+                    "{}",
+                    EFFECTIVE[world.item]
+                        .iter()
+                        .map(|x| x.to_string())
+                        .collect::<Vec<String>>()
+                        .join(" ")
+                ),
+                140.,
+                20.,
+                24.,
+                GREEN,
+            );
+            draw_text(
+                &format!(
+                    "{}",
+                    INEFFECTIVE[world.item]
+                        .iter()
+                        .map(|x| x.to_string())
+                        .collect::<Vec<String>>()
+                        .join(" ")
+                ),
+                140.,
+                40.,
+                24.,
+                RED,
             );
         }
 

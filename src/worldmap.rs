@@ -4,7 +4,6 @@ use macroquad::{
 };
 
 use crate::{
-    effect::{self, GameEffect},
     entities,
     items::{EFFECTIVE, INEFFECTIVE},
 };
@@ -22,7 +21,6 @@ pub struct WorldMap {
     pub game_over: u16,
     pub hero_pos: (usize, usize),
     pub entity_store: Vec<Entity>,
-    pub effects_store: Vec<[Option<GameEffect>; 4]>,
     pub item: usize,
     maxhp: i16,
     search_buffer: Vec<(usize, usize)>,
@@ -58,13 +56,8 @@ pub fn neighborsn(x: i16, y: i16, w: i16, h: i16, n: i16) -> impl Iterator<Item 
 impl WorldMap {
     pub fn new(mapw: usize, maph: usize) -> Self {
         let mut entity_store = Vec::with_capacity(mapw * maph);
-        let mut effects_store: Vec<[Option<GameEffect>; 4]> = Vec::with_capacity(mapw * maph);
-
         entity_store.push(entities::NONE);
-        effects_store.push([None, None, None, None]);
-
         entity_store.push(entities::MONSTERS[0]); // hero
-        effects_store.push([Some(GameEffect::Dagger(2)), None, None, None]);
 
         Self {
             mapw,
@@ -76,7 +69,6 @@ impl WorldMap {
             show_terrain: vec![vec![false; mapw]; maph],
             flags: vec![vec![0; mapw]; maph],
             entity_store,
-            effects_store,
             hero_pos: (0, 0),
             item: 1,
             game_over: 0,
@@ -125,8 +117,6 @@ impl WorldMap {
 
             let next_id = self.entity_store.len();
             self.entity_store.push(entities::MONSTERS[spawn as usize]);
-            self.effects_store
-                .push(entities::MONSTER_EFFECTS[spawn as usize]);
             self.set_monster(x, y, next_id);
             self.counts[spawn as usize] += 1;
         }

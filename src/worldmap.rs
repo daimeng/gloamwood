@@ -6,6 +6,7 @@ use macroquad::{
 use crate::{
     effect::{self, GameEffect},
     entities,
+    items::{EFFECTIVE, INEFFECTIVE},
 };
 use crate::{entities::Entity, spawns};
 
@@ -22,6 +23,7 @@ pub struct WorldMap {
     pub hero_pos: (usize, usize),
     pub entity_store: Vec<Entity>,
     pub effects_store: Vec<[Option<GameEffect>; 4]>,
+    pub item: usize,
     search_buffer: Vec<(usize, usize)>,
     gen_pool: Vec<usize>,
     gen_i: usize,
@@ -75,6 +77,7 @@ impl WorldMap {
             entity_store,
             effects_store,
             hero_pos: (0, 0),
+            item: 1,
             game_over: 0,
             search_buffer: vec![(0, 0); maph * mapw],
             gen_pool: (0..mapw * maph).collect(),
@@ -296,16 +299,16 @@ impl WorldMap {
     pub fn open_tile(&mut self, x: usize, y: usize) -> bool {
         // possible for tile to be open based on another effect
         if self.open[y][x] {
-            if self.entities[y][x] > 1 {
-                self.attack(x, y);
-                self.step(x, y);
-            }
+            // if self.entities[y][x] > 1 {
+            //     self.attack(x, y);
+            //     self.step(x, y);
+            // }
 
             false
         } else {
             let opened = self.open_tile_(x, y);
 
-            // step forward game if monster attacked or opened
+            // step forward game if monster opened
             if self.entities[y][x] > 1 {
                 self.attack(x, y);
                 self.step(x, y);
@@ -317,11 +320,27 @@ impl WorldMap {
 
     fn attack(&mut self, x: usize, y: usize) {
         let eid = self.entities[y][x];
+        let target = self.entity_store[eid];
         let heroid = self.entities[self.hero_pos.1][self.hero_pos.0];
 
         if eid > 1 {
-            self.entity_store[heroid].hp -= self.entity_store[eid].breed;
-            self.entity_store[eid].hp = 0;
+            match self.item {
+                0..=9 => {
+                    let ineff = INEFFECTIVE[self.item];
+                    let eff = EFFECTIVE[self.item];
+
+                    if ineff.contains(&target.breed) {
+                        self.entity_store[heroid].hp -= 2 * self.entity_store[eid].breed;
+                    } else if eff.contains(&target.breed) {
+                        self.entity_store[heroid].hp +=
+                            self.item as i16 - self.entity_store[eid].breed;
+                    } else {
+                        self.entity_store[heroid].hp -= 2 * self.entity_store[eid].breed;
+                    }
+                    self.entity_store[eid].hp = 0;
+                }
+                _ => {}
+            }
         }
     }
 

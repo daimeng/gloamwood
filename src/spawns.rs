@@ -42,17 +42,3 @@ pub static SPAWNS: [&[usize]; 11] = [
     &[1, 2, 4, 6, 7, 8, 9],    //peak
     &[1, 6, 7, 9],             //lava
 ];
-
-pub static NO_FOLLOW: [&[usize]; 11] = [
-    &[], //deep
-    &[], //shallow
-    &[], //swamp
-    &[], //plain
-    &[], //forest
-    &[], //darkforest
-    &[], //hill
-    &[], //mountain
-    &[], //clouds
-    &[], //peak
-    &[], //lava
-];

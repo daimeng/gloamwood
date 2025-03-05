@@ -288,9 +288,9 @@ async fn main() {
                 let trow = t / 16;
                 let tmod = t - trow * 16;
 
-                if (&world.effects_store)[eid].contains(&Some(GameEffect::Vamp)) {
-                    draw_circle(S * j as f32 + 8., S * i as f32 + 8., 6., RED);
-                }
+                // if (&world.effects_store)[eid].contains(&Some(GameEffect::Vamp)) {
+                //     draw_circle(S * j as f32 + 8., S * i as f32 + 8., 6., RED);
+                // }
 
                 draw_texture_ex(
                     &chars_tex,
@@ -525,21 +525,23 @@ async fn main() {
                 Color::new(1., 1., 1., 1.),
             );
 
-            for (i, effect) in world.effects_store[heroid].iter().enumerate() {
-                draw_rectangle_lines(
-                    100. + 50. * i as f32,
-                    5.,
-                    36.,
-                    36.,
-                    2.,
-                    Color::new(1., 1., 1., 1.),
-                );
-
-                match effect {
-                    Some(effect) => {}
-                    None => {}
-                }
-            }
+            draw_rectangle_lines(100., 5., 32., 32., 2., Color::new(1., 1., 1., 1.));
+            draw_texture_ex(
+                &chars_tex,
+                100.,
+                5.,
+                WHITE,
+                DrawTextureParams {
+                    dest_size: Some(vec2(32., 32.)),
+                    source: Some(Rect {
+                        x: world.item as f32 * S,
+                        y: S,
+                        w: S,
+                        h: S,
+                    }),
+                    ..Default::default()
+                },
+            );
         }
 
         if world.game_over == 2 {

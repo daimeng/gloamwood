@@ -6,6 +6,7 @@ use macroquad::ui::hash;
 use macroquad::ui::root_ui;
 mod effect;
 mod entities;
+mod items;
 mod mapgen;
 mod spawns;
 mod worldmap;
@@ -302,12 +303,6 @@ async fn main() {
                         ..Default::default()
                     },
                 );
-
-                if ent.breed < 1 {
-                    continue;
-                }
-
-                draw_rectangle(S * j as f32, S * i as f32, ent.hp as f32, 1., RED);
             }
         }
         set_default_camera();

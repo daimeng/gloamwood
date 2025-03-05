@@ -296,53 +296,26 @@ impl WorldMap {
     }
 
     pub fn open_tile(&mut self, x: usize, y: usize) -> bool {
-        let opened = self.open_tile_(x, y);
-
-        if opened == 0 {
-            let eid = self.entities[y][x];
-
-            if self.entity_store[eid].breed == -1 {
-                self.set_monster(x, y, 1);
-                self.set_monster(self.hero_pos.0, self.hero_pos.1, 0);
-                self.hero_pos = (x, y);
+        if self.open[y][x] {
+            if self.entities[y][x] > 1 {
+                self.attack(x, y);
+                self.step(x, y);
             }
 
-            self.step();
+            false
         } else {
-            // on open triggers
-            let eid = self.entities[y][x];
-            if eid > 1 {
-                for effect in self.effects_store[eid] {
-                    match effect {
-                        Some(GameEffect::Wail) => {
-                            for (xx, yy) in neighborsn(
-                                x as i16,
-                                y as i16,
-                                self.mapw as i16,
-                                self.maph as i16,
-                                2,
-                            ) {
-                                if xx == x && yy == y {
-                                    continue;
-                                }
+            let opened = self.open_tile_(x, y);
 
-                                let neighbor_id = self.entities[yy][xx];
-                                let neighbor = &mut self.entity_store[neighbor_id];
-
-                                if neighbor.breed == 0 || neighbor.level % 2 == 1 {
-                                    neighbor.hp -= 6;
-                                }
-                            }
-                        }
-                        Some(GameEffect::Pounce) => {}
-                        _ => {}
-                    }
-                }
+            // step forward game if monster attacked or opened
+            if self.entities[y][x] > 1 {
+                self.step(x, y);
             }
-        }
 
-        return opened > 0;
+            opened > 0
+        }
     }
+
+    fn attack(&mut self, x: usize, y: usize) {}
 
     pub fn chord_tile(&mut self, x: usize, y: usize) {
         // prevent chording on cloud tiles
@@ -384,13 +357,27 @@ impl WorldMap {
         }
     }
 
-    pub fn step(&mut self) {
+    pub fn step(&mut self, x: usize, y: usize) {
+        let eid = self.entities[y][x];
         let heroid = self.entities[self.hero_pos.1][self.hero_pos.0];
+
+        let mut evil_count = 0;
 
         for i in 0..self.maph {
             for j in 0..self.mapw {
                 let idx = self.entities[i][j];
                 let ent = self.entity_store[idx];
+
+                if ent.breed > 0 && ent.breed % 2 == 0 {
+                    evil_count += ent.breed;
+                }
+
+                // skip hp tax for recently opened or attack target
+                if idx == eid {
+                    continue;
+                }
+
+                // hp tax on player for showing tile
                 if self.entity_store[idx].level > 0 && ent.active {
                     let hero = &mut self.entity_store[heroid];
                     hero.hp -= 1;
@@ -400,6 +387,10 @@ impl WorldMap {
 
         if self.entity_store[heroid].hp < 1 {
             self.end_game(2);
+        }
+
+        if evil_count == 0 {
+            self.end_game(1);
         }
     }
 }

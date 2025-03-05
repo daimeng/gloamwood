@@ -24,6 +24,7 @@ pub struct WorldMap {
     pub entity_store: Vec<Entity>,
     pub effects_store: Vec<[Option<GameEffect>; 4]>,
     pub item: usize,
+    maxhp: i16,
     search_buffer: Vec<(usize, usize)>,
     gen_pool: Vec<usize>,
     gen_i: usize,
@@ -79,6 +80,7 @@ impl WorldMap {
             hero_pos: (0, 0),
             item: 1,
             game_over: 0,
+            maxhp: 10,
             search_buffer: vec![(0, 0); maph * mapw],
             gen_pool: (0..mapw * maph).collect(),
             gen_i: 0,
@@ -299,10 +301,10 @@ impl WorldMap {
     pub fn open_tile(&mut self, x: usize, y: usize) -> bool {
         // possible for tile to be open based on another effect
         if self.open[y][x] {
-            // if self.entities[y][x] > 1 {
-            //     self.attack(x, y);
-            //     self.step(x, y);
-            // }
+            if self.entities[y][x] > 1 {
+                self.loot(x, y);
+                self.step(x, y);
+            }
 
             false
         } else {
@@ -315,6 +317,26 @@ impl WorldMap {
             }
 
             opened > 0
+        }
+    }
+
+    fn loot(&mut self, x: usize, y: usize) {
+        let eid = self.entities[y][x];
+        let target = self.entity_store[eid];
+        let heroid = self.entities[self.hero_pos.1][self.hero_pos.0];
+
+        if target.hp == 0 {
+            if target.breed == 1 {
+                if self.entity_store[heroid].hp == self.maxhp {
+                    self.entity_store[heroid].hp += 1;
+                    self.maxhp += 1;
+                } else {
+                    self.entity_store[heroid].hp += 2;
+                }
+            } else {
+                self.item = target.breed as usize;
+            }
+            self.set_monster(x, y, 0);
         }
     }
 

@@ -5,6 +5,7 @@ use macroquad::prelude::*;
 use macroquad::time;
 use macroquad::ui::hash;
 use macroquad::ui::root_ui;
+use macroquad::ui::Skin;
 mod entities;
 mod items;
 mod mapgen;
@@ -24,6 +25,7 @@ const FOG_LINE: f32 = 1.;
 async fn main() {
     set_default_filter_mode(FilterMode::Nearest);
     let font = load_ttf_font("assets/SyneMono-Regular.ttf").await.unwrap();
+    let uifont = load_ttf_font("assets/SyneMono-Regular.ttf").await.unwrap();
     let tiles_tex = load_texture("assets/tiles.png").await.unwrap();
     let chars_tex = load_texture("assets/chars.png").await.unwrap();
     let interface_tex = load_texture("assets/interface.png").await.unwrap();
@@ -78,6 +80,23 @@ async fn main() {
         w.init(mines);
         w
     };
+
+    // UI Skin
+    let button_style = root_ui()
+        .style_builder()
+        .color(BLACK)
+        .margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
+        .with_font(&uifont)
+        .unwrap()
+        .text_color(WHITE)
+        .font_size(24)
+        .build();
+
+    let ui_skin = Skin {
+        button_style,
+        ..root_ui().default_skin()
+    };
+    root_ui().push_skin(&ui_skin);
 
     let animating = false;
     let mut world = init(mapw, maph, mines);
@@ -224,13 +243,18 @@ async fn main() {
         last_game_time = t;
 
         // Restart
-        let r_pressed = input::is_key_pressed(KeyCode::R);
+        let mut r_pressed = input::is_key_pressed(KeyCode::R);
+
+        // Restart button
+        if root_ui().button(vec2(screen_width() - 95., 0.), "Restart") {
+            r_pressed = true;
+        };
+
         if r_pressed {
             world = init(mapw, maph, mines);
         }
 
         clear_background(OUTER_BG_COLOR);
-
         set_camera(&gamecam);
 
         draw_rectangle(0., 0., S * mapw as f32, S * maph as f32, BG_COLOR);

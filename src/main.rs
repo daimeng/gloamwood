@@ -22,7 +22,7 @@ const TERRAIN_TINT: Color = color_u8!(255, 255, 255, 220);
 const FOG_LINE: f32 = 1.;
 
 static GAME_MODES: [(usize, usize, usize); 4] = [
-    (16, 16, 10),  // small
+    (16, 16, 64),  // small
     (30, 16, 120), // med
     (25, 25, 156), // big
     (50, 25, 313), // bigger

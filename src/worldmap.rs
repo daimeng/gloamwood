@@ -22,7 +22,7 @@ pub struct WorldMap {
     pub hero_pos: (usize, usize),
     pub entity_store: Vec<Entity>,
     pub item: usize,
-    maxhp: i16,
+    pub maxhp: i16,
     search_buffer: Vec<(usize, usize)>,
     gen_pool: Vec<usize>,
     gen_i: usize,
@@ -318,7 +318,10 @@ impl WorldMap {
         if target.hp == 0 {
             if target.breed == 1 {
                 if self.entity_store[heroid].hp < self.maxhp {
+                    self.entity_store[heroid].hp = self.maxhp.min(self.entity_store[heroid].hp + 2);
+                } else {
                     self.entity_store[heroid].hp += 1;
+                    self.maxhp += 1;
                 }
             } else {
                 self.item = target.breed as usize;
@@ -341,7 +344,9 @@ impl WorldMap {
                     if ineff.contains(&target.breed) {
                         self.entity_store[heroid].hp -= 2 * self.entity_store[eid].breed;
                     } else if eff.contains(&target.breed) {
-                        // noop
+                        if self.entity_store[heroid].hp < self.maxhp {
+                            self.entity_store[heroid].hp += 1;
+                        }
                     } else {
                         self.entity_store[heroid].hp -= self.entity_store[eid].breed;
                     }

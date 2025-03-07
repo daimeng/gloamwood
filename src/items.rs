@@ -3,9 +3,9 @@ pub static EFFECTIVE: [&[i16]; 10] = [
     &[],           //unarmed
     &[1, 2],       //sword
     &[7],          //acid
-    &[1, 3],       //thirster
+    &[3, 5],       //thirster
     &[2, 4],       //silverfang
-    &[3, 5],       //wail
+    &[1, 3, 5],    //wail
     &[5, 9],       //cleaver
     &[3, 9],       //chilltouch
     &[2, 4, 6, 8], //sunray

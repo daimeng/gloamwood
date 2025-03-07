@@ -21,6 +21,13 @@ const TERRAIN_TINT: Color = color_u8!(255, 255, 255, 220);
 
 const FOG_LINE: f32 = 1.;
 
+static GAME_MODES: [(usize, usize, usize); 4] = [
+    (16, 16, 64),  // small
+    (30, 16, 120), // med
+    (25, 25, 156), // big
+    (50, 25, 313), // bigger
+];
+
 #[macroquad::main("Gloamwood")]
 async fn main() {
     set_default_filter_mode(FilterMode::Nearest);
@@ -30,16 +37,9 @@ async fn main() {
     let chars_tex = load_texture("assets/chars.png").await.unwrap();
     let interface_tex = load_texture("assets/interface.png").await.unwrap();
 
-    let mapw = 30;
-    let maph = 16;
-    let mines = 120;
-    // let mapw = 50;
-    // let maph = 25;
-    // let mines = 300;
+    let (mut mapw, mut maph, mut mines) = GAME_MODES[0];
     let scale = 2.;
     let scalex2 = scale * 2.;
-
-    request_new_screen_size(mapw as f32 * S * scale, maph as f32 * S * scale + 100.);
 
     let mut gamecam = Camera2D {
         zoom: vec2(
@@ -61,6 +61,8 @@ async fn main() {
     // ╚═╝╚═╝  ╚═══╝╚═╝   ╚═╝
     //
     let init = |mapw: usize, maph: usize, mines: usize| {
+        request_new_screen_size(mapw as f32 * S * scale, maph as f32 * S * scale + 100.);
+
         let mut genterrains = vec![vec![0f32; mapw]; maph];
         mapgen::genmap_fissure(&mut genterrains);
         // println!("{:?}", &genterrains);
@@ -98,7 +100,6 @@ async fn main() {
     };
     root_ui().push_skin(&ui_skin);
 
-    let animating = false;
     let mut world = init(mapw, maph, mines);
 
     let mut mouse_pos;
@@ -153,6 +154,9 @@ async fn main() {
             println!("Clicked: {:?} {:?}", mouse_pos_world, mouse_tile);
         }
 
+        // Restart
+        let mut r_pressed = input::is_key_pressed(KeyCode::R);
+
         // open menu if clicked
         if root_ui().button(vec2(0., 0.), "Menu") {
             menu_open = true;
@@ -161,7 +165,7 @@ async fn main() {
         if menu_open {
             root_ui().window(
                 hash!(),
-                vec2(screen_width() / 2. - 100., screen_width() / 2. - 400.),
+                vec2(screen_width() / 2. - 100., screen_height() / 2. - 200.),
                 vec2(200., 400.),
                 |ui| {
                     // capture mouse clicks
@@ -172,11 +176,30 @@ async fn main() {
                     right_click = false;
                     mid_click = false;
 
+                    for (i, (w, h, m)) in GAME_MODES.iter().enumerate() {
+                        if ui.button(vec2(40., 40. + 40. * i as f32), format!("{}x{}", w, h)) {
+                            mapw = *w;
+                            maph = *h;
+                            mines = *m;
+                            r_pressed = true;
+                            menu_open = false;
+                        }
+                    }
+
                     if ui.button(vec2(40., 350.), "Close") {
                         menu_open = false;
                     }
                 },
             );
+        }
+
+        // Restart button
+        if root_ui().button(vec2(screen_width() - 95., 0.), "Restart") {
+            r_pressed = true;
+        };
+
+        if r_pressed {
+            world = init(mapw, maph, mines);
         }
 
         if world.game_over == 0 {
@@ -241,18 +264,6 @@ async fn main() {
             right_click_t = t
         }
         last_game_time = t;
-
-        // Restart
-        let mut r_pressed = input::is_key_pressed(KeyCode::R);
-
-        // Restart button
-        if root_ui().button(vec2(screen_width() - 95., 0.), "Restart") {
-            r_pressed = true;
-        };
-
-        if r_pressed {
-            world = init(mapw, maph, mines);
-        }
 
         clear_background(OUTER_BG_COLOR);
         set_camera(&gamecam);
@@ -537,12 +548,16 @@ async fn main() {
             let (herox, heroy) = world.hero_pos;
             let heroid = world.entities[heroy][herox];
 
-            draw_text(
-                &format!("HP: {}", world.hero().hp),
+            draw_text_ex(
+                &format!("HP: {}/{}", world.hero().hp, world.maxhp),
                 screen_width() / 2.,
                 20.,
-                36.,
-                WHITE,
+                TextParams {
+                    font: Some(&font),
+                    font_size: 24,
+                    color: WHITE,
+                    ..Default::default()
+                },
             );
 
             draw_rectangle_lines(100., 5., 32., 32., 2., Color::new(1., 1., 1., 1.));

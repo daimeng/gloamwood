@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use macroquad::{
     miniquad::date,
     rand::{ChooseRandom, RandGenerator},
@@ -24,6 +26,7 @@ pub struct WorldMap {
     pub item: usize,
     pub maxhp: i16,
     search_buffer: Vec<(usize, usize)>,
+    search_visited: HashSet<(usize, usize)>,
     gen_pool: Vec<usize>,
     gen_i: usize,
     pub initialized: bool,
@@ -59,6 +62,8 @@ impl WorldMap {
         entity_store.push(entities::NONE);
         entity_store.push(entities::MONSTERS[0]); // hero
 
+        let search_visited = HashSet::with_capacity(maph * mapw);
+
         Self {
             mapw,
             maph,
@@ -74,6 +79,7 @@ impl WorldMap {
             game_over: 0,
             maxhp: 10,
             search_buffer: vec![(0, 0); maph * mapw],
+            search_visited,
             gen_pool: (0..mapw * maph).collect(),
             gen_i: 0,
             initialized: false,
@@ -239,9 +245,11 @@ impl WorldMap {
         }
         self.initialized = true;
 
+        self.search_visited.clear();
         let mut j = 0;
-
         self.search_buffer[j] = (x, y);
+        self.search_visited.insert((x, y));
+
         j += 1;
 
         let mut opened = 0;
@@ -271,7 +279,8 @@ impl WorldMap {
                 continue;
             }
 
-            for (xx, yy) in neighbors(x, y, self.mapw, self.maph) {
+            for n in neighbors(x, y, self.mapw, self.maph) {
+                let (xx, yy) = n;
                 // skip self
                 if xx == x && yy == y {
                     continue;
@@ -279,8 +288,12 @@ impl WorldMap {
                 if self.open[yy][xx] {
                     continue;
                 }
+                if self.search_visited.contains(&n) {
+                    continue;
+                }
+                self.search_visited.insert(n);
 
-                self.search_buffer[j] = (xx, yy);
+                self.search_buffer[j] = n;
                 j += 1;
             }
         }
@@ -315,7 +328,7 @@ impl WorldMap {
         let target = self.entity_store[eid];
         let heroid = self.entities[self.hero_pos.1][self.hero_pos.0];
 
-        if target.hp == 0 {
+        if target.hp == 0 && target.breed >= 0 {
             if target.breed == 1 {
                 if self.entity_store[heroid].hp < self.maxhp {
                     self.entity_store[heroid].hp = self.maxhp.min(self.entity_store[heroid].hp + 2);
@@ -327,6 +340,8 @@ impl WorldMap {
                 self.item = target.breed as usize;
             }
             self.set_monster(x, y, 0);
+
+            self.counts[target.breed as usize] -= 1;
         }
     }
 
@@ -399,24 +414,23 @@ impl WorldMap {
         }
     }
 
-    pub fn step(&mut self, x: usize, y: usize) {
-        let eid = self.entities[y][x];
-        let heroid = self.entities[self.hero_pos.1][self.hero_pos.0];
-
+    #[inline(always)]
+    pub fn evil_count(&self) -> (i16, i16) {
         let mut evil_count = 0;
-
-        for i in 0..self.maph {
-            for j in 0..self.mapw {
-                let idx = self.entities[i][j];
-                let ent = self.entity_store[idx];
-
-                if ent.breed > 0 && ent.breed % 2 == 0 {
-                    evil_count += ent.hp;
-                }
+        let mut evil_sum = 0;
+        for (i, &value) in self.counts.iter().enumerate() {
+            if i % 2 == 0 {
+                evil_count += value;
+                evil_sum += i as i16 * value;
             }
         }
+        return (evil_count, evil_sum);
+    }
 
-        println!("Remaining: {}", evil_count);
+    pub fn step(&mut self, x: usize, y: usize) {
+        let heroid = self.entities[self.hero_pos.1][self.hero_pos.0];
+
+        let (evil_count, _) = self.evil_count();
 
         if self.entity_store[heroid].hp < 1 {
             self.end_game(2);

@@ -22,7 +22,7 @@ const TERRAIN_TINT: Color = color_u8!(255, 255, 255, 220);
 const FOG_LINE: f32 = 1.;
 
 static GAME_MODES: [(usize, usize, usize); 4] = [
-    (16, 16, 64),  // small
+    (16, 16, 10),  // small
     (30, 16, 120), // med
     (25, 25, 156), // big
     (50, 25, 313), // bigger
@@ -522,25 +522,39 @@ async fn main() {
             }
         }
 
-        for i in 1..=9 {
+        #[cfg(feature = "nofog")]
+        {
+            for i in 1..=9 {
+                draw_text(
+                    &format!("{:02}x", world.counts[i]),
+                    100. * (i - 1) as f32 + 10.,
+                    screen_height() - 10.,
+                    32.,
+                    WHITE,
+                );
+
+                draw_texture_ex(
+                    &chars_tex,
+                    100. * (i - 1) as f32 + if world.counts[i] > 99 { 64. } else { 48. },
+                    screen_height() - 10. - 24.,
+                    WHITE,
+                    DrawTextureParams {
+                        dest_size: dest_size2,
+                        source: Some(Rect::new(S * i as f32, S * 0 as f32, S, S)),
+                        ..Default::default()
+                    },
+                );
+            }
+        }
+        #[cfg(not(feature = "nofog"))]
+        {
+            let (_, evil_sum) = world.evil_count();
             draw_text(
-                &format!("{:02}x", world.counts[i]),
-                100. * (i - 1) as f32 + 10.,
+                &format!("Miasma: {}", evil_sum),
+                100.,
                 screen_height() - 10.,
                 32.,
                 WHITE,
-            );
-
-            draw_texture_ex(
-                &chars_tex,
-                100. * (i - 1) as f32 + if world.counts[i] > 99 { 64. } else { 48. },
-                screen_height() - 10. - 24.,
-                WHITE,
-                DrawTextureParams {
-                    dest_size: dest_size2,
-                    source: Some(Rect::new(S * i as f32, S * 0 as f32, S, S)),
-                    ..Default::default()
-                },
             );
         }
 
@@ -609,7 +623,16 @@ async fn main() {
             );
         }
 
-        if world.game_over == 2 {
+        if world.game_over == 1 {
+            let center = get_text_center("You Win!", Option::None, 48, 1.0, 0.);
+            draw_text(
+                "You Win!",
+                screen_width() / 2. - center.x,
+                screen_height() / 2. - center.y,
+                48.,
+                Color::new(1., 1., 1., 0.8),
+            );
+        } else if world.game_over == 2 {
             let center = get_text_center("Game Over", Option::None, 48, 1.0, 0.);
             draw_text(
                 "Game Over",

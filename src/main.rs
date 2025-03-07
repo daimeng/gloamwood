@@ -37,7 +37,7 @@ async fn main() {
     let chars_tex = load_texture("assets/chars.png").await.unwrap();
     let interface_tex = load_texture("assets/interface.png").await.unwrap();
 
-    let (mut mapw, mut maph, mut mines) = GAME_MODES[0];
+    let (mut mapw, mut maph, mut mines) = GAME_MODES[1];
     let scale = 2.;
     let scalex2 = scale * 2.;
 
@@ -551,7 +551,7 @@ async fn main() {
             let (_, evil_sum) = world.evil_count();
             draw_text(
                 &format!("Miasma: {}", evil_sum),
-                100.,
+                20.,
                 screen_height() - 10.,
                 32.,
                 WHITE,

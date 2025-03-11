@@ -32,11 +32,11 @@ pub static SPAWNS: [&[usize]; 11] = [
     &[1, 2, 3, 4, 6],          //shallow
     &[1, 2, 3, 4, 6, 8],       //swamp
     &[1, 2, 3, 6],             //plain
-    &[1, 2, 3, 4, 5, 6, 8],    //forest
-    &[1, 2, 3, 4, 5, 6, 8],    //darkforest
+    &[1, 2, 3, 4, 5, 6],       //forest
+    &[1, 2, 3, 4, 5, 6],       //darkforest
     &[1, 2, 3, 4, 5, 6, 7],    //hill
     &[1, 2, 4, 5, 6, 7, 8, 9], //mountain
-    &[1, 2, 4, 5, 6, 7, 8, 9], //clouds
+    &[1, 2, 4, 6, 7, 8, 9],    //clouds
     &[1, 2, 4, 6, 7, 8, 9],    //peak
     &[1, 6, 7, 9],             //lava
 ];
@@ -59,3 +59,5 @@ pub const SPAWN_ALLOWED: [[bool; 11]; 10] = {
 
     spawns_allowed
 };
+
+pub static SPAWN_DIST: [f32; 9] = [3., 5., 6., 8., 13., 21., 34., 55., 89.];

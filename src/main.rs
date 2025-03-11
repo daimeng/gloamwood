@@ -63,11 +63,11 @@ async fn main() {
     // ██║██║ ╚████║██║   ██║
     // ╚═╝╚═╝  ╚═══╝╚═╝   ╚═╝
     //
-    let init = |mapw: usize, maph: usize, mines: usize| {
+    let init = |mapw: usize, maph: usize, mines: usize, seed_counter: u64| {
         request_new_screen_size(mapw as f32 * S * scale, maph as f32 * S * scale + 100.);
 
         let mut genterrains = vec![vec![0f32; mapw]; maph];
-        mapgen::genmap_fissure(&mut genterrains);
+        mapgen::genmap_fissure(&mut genterrains, seed_counter);
         // println!("{:?}", &genterrains);
 
         let terrains: Vec<Vec<i16>> = genterrains
@@ -82,7 +82,7 @@ async fn main() {
 
         let mut w = worldmap::WorldMap::new(mapw, maph);
         w.set_terrain(terrains);
-        w.init(mines);
+        w.init(mines, seed_counter);
         w
     };
 
@@ -140,7 +140,12 @@ async fn main() {
         })
         .collect();
 
-    let mut world = init(mapw, maph, mines);
+    let mut seed_counter = 0;
+    let mut world = init(mapw, maph, mines, seed_counter);
+    while world.incomplete {
+        seed_counter += 1;
+        world = init(mapw, maph, mines, seed_counter);
+    }
 
     let mut mouse_pos;
     let mut menu_open = false;
@@ -247,7 +252,11 @@ async fn main() {
         };
 
         if r_pressed {
-            world = init(mapw, maph, mines);
+            world = init(mapw, maph, mines, seed_counter);
+            while world.incomplete {
+                seed_counter += 1;
+                world = init(mapw, maph, mines, seed_counter);
+            }
         }
 
         if world.game_over == 0 {

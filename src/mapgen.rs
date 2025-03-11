@@ -1,8 +1,8 @@
 use macroquad::{miniquad::date, prelude::*};
 
-pub fn genmap_fissure(terrain: &mut [Vec<f32>]) {
+pub fn genmap_fissure(terrain: &mut [Vec<f32>], seed_counter: u64) {
     let rng = rand::RandGenerator::new();
-    rng.srand(date::now() as u64);
+    rng.srand(date::now() as u64 + seed_counter);
 
     let h = terrain.len();
     let w = terrain[0].len();

@@ -3,13 +3,15 @@ use std::collections::HashSet;
 use macroquad::{
     miniquad::date,
     rand::{ChooseRandom, RandGenerator},
+    time,
 };
 
+use crate::entities::Entity;
 use crate::{
     entities,
     items::{EFFECTIVE, INEFFECTIVE},
+    spawns::{SPAWN_ALLOWED, SPAWN_DIST},
 };
-use crate::{entities::Entity, spawns};
 
 pub struct WorldMap {
     pub mapw: usize,
@@ -29,6 +31,7 @@ pub struct WorldMap {
     search_visited: HashSet<(usize, usize)>,
     gen_pool: Vec<usize>,
     gen_i: usize,
+    pub incomplete: bool,
     pub initialized: bool,
     pub counts: [i16; 10],
 }
@@ -58,11 +61,10 @@ pub fn neighborsn(x: i16, y: i16, w: i16, h: i16, n: i16) -> impl Iterator<Item 
 
 impl WorldMap {
     pub fn new(mapw: usize, maph: usize) -> Self {
+        let search_visited = HashSet::with_capacity(maph * mapw);
         let mut entity_store = Vec::with_capacity(mapw * maph);
         entity_store.push(entities::NONE);
         entity_store.push(entities::MONSTERS[0]); // hero
-
-        let search_visited = HashSet::with_capacity(maph * mapw);
 
         Self {
             mapw,
@@ -83,33 +85,43 @@ impl WorldMap {
             gen_pool: (0..mapw * maph).collect(),
             gen_i: 0,
             initialized: false,
+            incomplete: true,
             counts: [0; 10],
         }
     }
 
-    pub fn init(&mut self, mines: usize) {
+    pub fn init(&mut self, mines: usize, seed_counter: u64) {
         let rng = RandGenerator::new();
-        rng.srand(date::now() as u64);
+        rng.srand(date::now() as u64 + seed_counter);
 
         self.gen_pool.shuffle_with_state(&rng);
         let mut total = 0;
+        let mut count = 0;
 
-        let mut balance = 0;
-        for i in 0..mines {
+        let mut monster_bank = SPAWN_DIST.map(|x| (mines as f32 / x as f32).ceil() as i16);
+        println!("{:?}", monster_bank);
+
+        while self.gen_i < self.gen_pool.len() && count < mines {
+            let n = self.gen_pool[self.gen_i];
             self.gen_i += 1;
-            let n = self.gen_pool[i];
             let y = n / self.mapw;
             let x = n - y * self.mapw;
             let t = self.terrains[y][x];
-            let spawns = spawns::SPAWNS[t as usize];
-            let slen = spawns.len() as i16;
 
-            let lvl: i16 = (rng.gen_range(-slen, slen + 1) + rng.gen_range(-slen, slen + 1)) / 2;
-            let lvlabs = (lvl.abs() + balance).max(1).min(slen);
-            let spawn = spawns[(lvlabs - 1) as usize];
+            let mut spawn = 1;
+            for i in (0..9).rev() {
+                if monster_bank[i] == 0 {
+                    continue;
+                }
 
+                if SPAWN_ALLOWED[i + 1][t as usize] {
+                    monster_bank[i] -= 1;
+                    spawn = i + 1;
+                    break;
+                }
+            }
             total += spawn;
-            balance = if total > 3 * i { -1 } else { 1 };
+            count += 1;
 
             let next_id = self.entity_store.len();
             self.entity_store.push(entities::MONSTERS[spawn as usize]);
@@ -117,6 +129,15 @@ impl WorldMap {
             self.counts[spawn as usize] += 1;
         }
 
+        self.incomplete = false;
+        for i in 1..9 {
+            if monster_bank[i] > 0 {
+                self.incomplete = true;
+                break;
+            }
+        }
+
+        println!("{:?}", monster_bank);
         println!("{}/{}", self.evil_count().1, total);
     }
 
@@ -350,9 +371,9 @@ impl WorldMap {
                     if ineff.contains(&target.breed) {
                         self.entity_store[heroid].hp -= 2 * self.entity_store[eid].breed;
                     } else if eff.contains(&target.breed) {
-                        if self.entity_store[heroid].hp < self.maxhp {
-                            self.entity_store[heroid].hp += 1;
-                        }
+                        // if self.entity_store[heroid].hp < self.maxhp {
+                        //     self.entity_store[heroid].hp += 1;
+                        // }
                     } else {
                         self.entity_store[heroid].hp -= self.entity_store[eid].breed;
                     }

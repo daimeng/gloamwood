@@ -1,3 +1,4 @@
+use entities::MONSTERS;
 use items::EFFECTIVE;
 use items::INEFFECTIVE;
 use macroquad::input;
@@ -5,6 +6,8 @@ use macroquad::prelude::*;
 use macroquad::time;
 use macroquad::ui::hash;
 use macroquad::ui::root_ui;
+use macroquad::ui::widgets;
+use macroquad::ui::widgets::Texture;
 use macroquad::ui::Skin;
 mod entities;
 mod items;
@@ -94,11 +97,48 @@ async fn main() {
         .font_size(24)
         .build();
 
+    let window_style = root_ui()
+        .style_builder()
+        .color(Color::from_rgba(0, 0, 0, 200))
+        .margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
+        .with_font(&uifont)
+        .unwrap()
+        .text_color(WHITE)
+        .font_size(24)
+        .build();
+
     let ui_skin = Skin {
         button_style,
+        window_style,
         ..root_ui().default_skin()
     };
     root_ui().push_skin(&ui_skin);
+
+    let monster_textures: Vec<Texture2D> = (0..=9)
+        .map(|i| {
+            let tex = Texture2D::from_image(&chars_tex.get_texture_data().sub_image(Rect::new(
+                16. * i as f32,
+                0.,
+                16.,
+                16.,
+            )));
+            tex.set_filter(FilterMode::Nearest);
+            tex
+        })
+        .collect();
+
+    let weapon_textures: Vec<Texture2D> = (0..=9)
+        .map(|i| {
+            let tex = Texture2D::from_image(&chars_tex.get_texture_data().sub_image(Rect::new(
+                16. * i as f32,
+                16.,
+                16.,
+                16.,
+            )));
+            tex.set_filter(FilterMode::Nearest);
+            tex
+        })
+        .collect();
 
     let mut world = init(mapw, maph, mines);
 
@@ -165,8 +205,8 @@ async fn main() {
         if menu_open {
             root_ui().window(
                 hash!(),
-                vec2(screen_width() / 2. - 100., screen_height() / 2. - 200.),
-                vec2(200., 400.),
+                vec2(screen_width() / 2. - 300., screen_height() / 2. - 300.),
+                vec2(600., 600.),
                 |ui| {
                     // capture mouse clicks
                     let lclick = left_click;
@@ -177,7 +217,7 @@ async fn main() {
                     mid_click = false;
 
                     for (i, (w, h, m)) in GAME_MODES.iter().enumerate() {
-                        if ui.button(vec2(40., 40. + 40. * i as f32), format!("{}x{}", w, h)) {
+                        if ui.button(vec2(40. + 80. * i as f32, 40.), format!("{}x{}", w, h)) {
                             mapw = *w;
                             maph = *h;
                             mines = *m;
@@ -186,7 +226,15 @@ async fn main() {
                         }
                     }
 
-                    if ui.button(vec2(40., 350.), "Close") {
+                    ui.group(hash!(), vec2(600., 200.), |ui| {
+                        for i in 1..=9 {
+                            ui.texture(monster_textures[i].weak_clone(), 32., 32.);
+                            ui.same_line(0.);
+                            ui.texture(weapon_textures[i].weak_clone(), 32., 32.);
+                        }
+                    });
+
+                    if ui.button(vec2(40., 550.), "Close") {
                         menu_open = false;
                     }
                 },
@@ -522,7 +570,7 @@ async fn main() {
             }
         }
 
-        #[cfg(feature = "nofog")]
+        // #[cfg(feature = "nofog")]
         {
             for i in 1..=9 {
                 draw_text(
@@ -546,17 +594,17 @@ async fn main() {
                 );
             }
         }
-        #[cfg(not(feature = "nofog"))]
-        {
-            let (_, evil_sum) = world.evil_count();
-            draw_text(
-                &format!("Miasma: {}", evil_sum),
-                20.,
-                screen_height() - 10.,
-                32.,
-                WHITE,
-            );
-        }
+        // #[cfg(not(feature = "nofog"))]
+        // {
+        //     let (_, evil_sum) = world.evil_count();
+        //     draw_text(
+        //         &format!("Miasma: {}", evil_sum),
+        //         20.,
+        //         screen_height() - 10.,
+        //         32.,
+        //         WHITE,
+        //     );
+        // }
 
         if world.initialized {
             let (herox, heroy) = world.hero_pos;

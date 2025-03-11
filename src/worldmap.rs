@@ -94,16 +94,6 @@ impl WorldMap {
         self.gen_pool.shuffle_with_state(&rng);
         let mut total = 0;
 
-        // for i in 0..mines {
-        //     self.gen_i += 1;
-        //     total += 1 as i16;
-        //     let n = self.gen_pool[i];
-        //     let y = n / self.mapw;
-        //     let x = n - y * self.mapw;
-        //     self.set_monster(x, y, Entity::new(&entities::WOLF));
-        //     self.counts[1] += 1;
-        // }
-
         let mut balance = 0;
         for i in 0..mines {
             self.gen_i += 1;
@@ -126,7 +116,8 @@ impl WorldMap {
             self.set_monster(x, y, next_id);
             self.counts[spawn as usize] += 1;
         }
-        println!("{}", total);
+
+        println!("{}/{}", self.evil_count().1, total);
     }
 
     pub fn set_terrain(&mut self, terrains: Vec<Vec<i16>>) {
@@ -406,6 +397,9 @@ impl WorldMap {
         if sum == aura {
             for (xx, yy) in neighbors(x, y, self.mapw, self.maph) {
                 if self.flags[yy][xx] > 0 {
+                    continue;
+                }
+                if self.open[yy][xx] {
                     continue;
                 }
 

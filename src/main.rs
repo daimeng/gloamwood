@@ -1,4 +1,3 @@
-use entities::MONSTERS;
 use items::EFFECTIVE;
 use items::INEFFECTIVE;
 use macroquad::input;
@@ -6,8 +5,6 @@ use macroquad::prelude::*;
 use macroquad::time;
 use macroquad::ui::hash;
 use macroquad::ui::root_ui;
-use macroquad::ui::widgets;
-use macroquad::ui::widgets::Texture;
 use macroquad::ui::Skin;
 mod entities;
 mod items;
@@ -142,6 +139,8 @@ async fn main() {
 
     let mut seed_counter = 0;
     let mut world = init(mapw, maph, mines, seed_counter);
+    // Retry until all monsters are placed.
+    // TODO: Find better way to guarantee monster placements
     while world.incomplete {
         seed_counter += 1;
         world = init(mapw, maph, mines, seed_counter);
@@ -161,7 +160,6 @@ async fn main() {
     let mut flag_cd = min_flag_cd;
     loop {
         let t = time::get_time();
-        let dt = last_game_time - t;
 
         // adjust camera in case of screen size changes
         gamecam.zoom.x = 1. / screen_width() * scalex2;
@@ -221,26 +219,38 @@ async fn main() {
                     right_click = false;
                     mid_click = false;
 
-                    for (i, (w, h, m)) in GAME_MODES.iter().enumerate() {
-                        if ui.button(vec2(40. + 80. * i as f32, 40.), format!("{}x{}", w, h)) {
-                            mapw = *w;
-                            maph = *h;
-                            mines = *m;
-                            r_pressed = true;
-                            menu_open = false;
+                    ui.group(hash!(), vec2(500., 100.), |ui| {
+                        for (i, (w, h, m)) in GAME_MODES.iter().enumerate() {
+                            if ui.button(vec2(40. + 80. * i as f32, 40.), format!("{}x{}", w, h)) {
+                                mapw = *w;
+                                maph = *h;
+                                mines = *m;
+                                r_pressed = true;
+                                menu_open = false;
+                            }
                         }
-                    }
-
-                    ui.group(hash!(), vec2(600., 200.), |ui| {
-                        for i in 1..=9 {
-                            ui.texture(monster_textures[i].weak_clone(), 32., 32.);
-                            ui.same_line(0.);
-                            ui.texture(weapon_textures[i].weak_clone(), 32., 32.);
+                        if ui.button(vec2(400., 40.), "Close") {
+                            menu_open = false;
                         }
                     });
 
-                    if ui.button(vec2(40., 550.), "Close") {
-                        menu_open = false;
+                    ui.separator();
+                    for i in 1..=9 {
+                        ui.texture(monster_textures[i].weak_clone(), 32., 32.);
+                        ui.same_line(0.);
+                        ui.texture(weapon_textures[i].weak_clone(), 32., 32.);
+                        ui.same_line(0.);
+                        ui.button(None, "Kill:");
+                        for j in EFFECTIVE[i] {
+                            ui.same_line(0.);
+                            ui.texture(monster_textures[*j as usize].weak_clone(), 32., 32.);
+                        }
+                        ui.button(None, "Weak:");
+                        for j in INEFFECTIVE[i] {
+                            ui.same_line(0.);
+                            ui.texture(monster_textures[*j as usize].weak_clone(), 32., 32.);
+                        }
+                        ui.label(None, " ");
                     }
                 },
             );
